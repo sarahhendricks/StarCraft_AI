@@ -1,5 +1,18 @@
 package bot;
 
+import java.util.HashSet;
+
+import jnibwapi.BWAPIEventListener;
+import jnibwapi.JNIBWAPI;
+import jnibwapi.Position;
+import jnibwapi.Unit;
+import jnibwapi.types.TechType;
+import jnibwapi.types.TechType.TechTypes;
+import jnibwapi.types.UnitType;
+import jnibwapi.types.UnitType.UnitTypes;
+import jnibwapi.types.UpgradeType;
+import jnibwapi.types.UpgradeType.UpgradeTypes;
+
 /**
  * Example of a Java AI Client that does nothing.
  */
@@ -9,109 +22,55 @@ import jnibwapi.Position;
 import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
 
-import java.util.HashSet;
-
 public class MinimalAIClient implements BWAPIEventListener {
-    /** reference to JNI-BWAPI */
-    private final JNIBWAPI bwapi;
+        private final JNIBWAPI bwapi;
 
-    /** used for mineral splits */
-    private final HashSet<Unit> claimedMinerals = new HashSet<>();
+        public static void main(String[] args) {
+                new MinimalAIClient();
+        }
 
-    /** have drone 5 been morphed */
-    private boolean morphedDrone;
+        public MinimalAIClient() {
+                bwapi = new JNIBWAPI(this, true);
+                bwapi.start();
+        }
 
-    /** the drone that has been assigned to building a pool */
-    private Unit poolDrone;
+        @Override
+        public void connected() {}
 
-    /** when should the next overlord be spawned? */
-    private int supplyCap;
+        @Override
+        public void matchStart() {
+                System.out.println("Game Started");
 
-    /**
-     * Create a Java AI.
-     */
-	public static void main(String[] args) {
-		new MinimalAIClient();
-	}
+                bwapi.enableUserInput();
+                bwapi.enablePerfectInformation();
+                //bwapi.setGameSpeed(0);
+        }
 
-    /**
-     * Instantiates the JNI-BWAPI interface and connects to BWAPI.
-     */
-	public MinimalAIClient() {
-		bwapi = new JNIBWAPI(this, false);
-		bwapi.start();
-	}
+        @Override
+        public void matchFrame() {
+                for (Unit u : bwapi.getAllUnits()) {
+                        bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                }
 
-    /**
-     * Connection to BWAPI established.
-     */
-	@Override
-	public void connected() {
-        System.out.println("Connected");
-    }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        System.out.println("Print should be collecting minerals in this loop");
+                        if (unit.getType() == UnitTypes.Protoss_Probe) {
+                                System.out.println("GFound our probes!");
+                                // You can use referential equality for units, too
+                                if (unit.isIdle()) {
+                                        for (Unit minerals : bwapi.getNeutralUnits()) {
+                                                if (minerals.getType().isMineralField()) {
+                                                        //& !claimedMinerals.contains(minerals)
+                                                        double distance = unit.getDistance(minerals);
 
-    /**
-     * Called at the beginning of a game.
-     */
-	@Override
-	public void matchStart() {
-        System.out.println("Game Started");
-
-        bwapi.enableUserInput();
-        bwapi.enablePerfectInformation();
-        bwapi.setGameSpeed(0);
-
-        // reset agent state
-        claimedMinerals.clear();
-        morphedDrone = false;
-        poolDrone = null;
-        supplyCap = 0;
-    }
-
-    /**
-     * Called each game cycle.
-     */
-	@Override
-	public void matchFrame() {
-		for (Unit u : bwapi.getAllUnits()) {
-			bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
-		}
-	}
-	
-	@Override
-	public void keyPressed(int keyCode) {}
-	@Override
-	public void matchEnd(boolean winner) {}
-	@Override
-	public void sendText(String text) {}
-	@Override
-	public void receiveText(String text) {}
-	@Override
-	public void nukeDetect(Position p) {}
-	@Override
-	public void nukeDetect() {}
-	@Override
-	public void playerLeft(int playerID) {}
-	@Override
-	public void unitCreate(int unitID) {}
-	@Override
-	public void unitDestroy(int unitID) {}
-	@Override
-	public void unitDiscover(int unitID) {}
-	@Override
-	public void unitEvade(int unitID) {}
-	@Override
-	public void unitHide(int unitID) {}
-	@Override
-	public void unitMorph(int unitID) {}
-	@Override
-	public void unitShow(int unitID) {}
-	@Override
-	public void unitRenegade(int unitID) {}
-	@Override
-	public void saveGame(String gameName) {}
-	@Override
-	public void unitComplete(int unitID) {}
-	@Override
-	public void playerDropped(int playerID) {}
-}
+                                                        if (distance < 300) {
+                                                                unit.rightClick(minerals, false);
+                                                                //claimedMinerals.add(minerals);
+                                                                break;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
