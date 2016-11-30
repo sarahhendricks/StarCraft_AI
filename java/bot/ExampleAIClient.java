@@ -32,7 +32,7 @@ public class ExampleAIClient implements BWAPIEventListener {
 	/** have drone 5 been morphed */
 	private boolean morphedDrone;
 	
-	/** the drone that has been assigned to building a pool */
+	/** the probe that has been assigned to building a pool */
 	private Unit poolDrone;
 	
 	/** when should the next overlord be spawned? */
