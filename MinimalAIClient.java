@@ -9,24 +9,68 @@ import jnibwapi.Position;
 import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
 
+import java.util.HashSet;
+
 public class MinimalAIClient implements BWAPIEventListener {
-	private JNIBWAPI bwapi;
-	
+    /** reference to JNI-BWAPI */
+    private final JNIBWAPI bwapi;
+
+    /** used for mineral splits */
+    private final HashSet<Unit> claimedMinerals = new HashSet<>();
+
+    /** have drone 5 been morphed */
+    private boolean morphedDrone;
+
+    /** the drone that has been assigned to building a pool */
+    private Unit poolDrone;
+
+    /** when should the next overlord be spawned? */
+    private int supplyCap;
+
+    /**
+     * Create a Java AI.
+     */
 	public static void main(String[] args) {
 		new MinimalAIClient();
 	}
-	
+
+    /**
+     * Instantiates the JNI-BWAPI interface and connects to BWAPI.
+     */
 	public MinimalAIClient() {
 		bwapi = new JNIBWAPI(this, false);
 		bwapi.start();
 	}
-	
+
+    /**
+     * Connection to BWAPI established.
+     */
 	@Override
-	public void connected() {}
-	
+	public void connected() {
+        System.out.println("Connected");
+    }
+
+    /**
+     * Called at the beginning of a game.
+     */
 	@Override
-	public void matchStart() {}
-	
+	public void matchStart() {
+        System.out.println("Game Started");
+
+        bwapi.enableUserInput();
+        bwapi.enablePerfectInformation();
+        bwapi.setGameSpeed(0);
+
+        // reset agent state
+        claimedMinerals.clear();
+        morphedDrone = false;
+        poolDrone = null;
+        supplyCap = 0;
+    }
+
+    /**
+     * Called each game cycle.
+     */
 	@Override
 	public void matchFrame() {
 		for (Unit u : bwapi.getAllUnits()) {
