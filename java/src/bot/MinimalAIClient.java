@@ -23,20 +23,33 @@ import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
+        /** reference to JNI-BWAPI */
         private final JNIBWAPI bwapi;
 
+		/**
+		 * Create a Java AI.
+		 */
         public static void main(String[] args) {
                 new MinimalAIClient();
         }
 
+		/**
+		 * Instantiates the JNI-BWAPI interface and connects to BWAPI.
+		 */
         public MinimalAIClient() {
                 bwapi = new JNIBWAPI(this, true);
                 bwapi.start();
         }
 
-        @Override
-        public void connected() {}
+		/**
+		 * Connection to BWAPI established.
+		 */
+		@Override
+        public void connected() {System.out.println("Connected to our new client");}
 
+        /**
+         * Called at the beginning of a game.
+         */
         @Override
         public void matchStart() {
                 System.out.println("Game Started");
@@ -46,6 +59,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //bwapi.setGameSpeed(0);
         }
 
+        /**
+         * Called each game cycle.
+         */
         @Override
         public void matchFrame() {
                 for (Unit u : bwapi.getAllUnits()) {
