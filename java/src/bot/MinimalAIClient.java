@@ -53,9 +53,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
 
                 for (Unit unit : bwapi.getMyUnits()) {
-                        System.out.println("Print should be collecting minerals in this loop");
+                        // System.out.println("Print should be collecting minerals in this loop");
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
-                                System.out.println("GFound our probes!");
+                                //   System.out.println("GFound our probes!");
                                 // You can use referential equality for units, too
                                 if (unit.isIdle()) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
@@ -72,6 +72,32 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         }
                                 }
                         }
+                }
+
+                //here we will create another protoss probe once we have 50 minerals
+                // create new probe
+                for (Unit nexus : bwapi.getMyUnits()) {
+                        if (bwapi.getSelf().getMinerals() >= 60) {
+                                //System.out.print("We have 50 minerals");
+                                //make a new probe
+                                if (nexus.getType() == UnitTypes.Protoss_Nexus) {
+                                        nexus.build(nexus.getPosition(), UnitTypes.Protoss_Probe);
+                                        nexus.morph(UnitTypes.Protoss_Probe);
+
+                                        // System.out.println("build Probe");
+                                }
+                                //unit.build(unit.getPosition(), UnitTypes.Protoss_Probe);
+                                // unit.morph(UnitTypes.Protoss_Probe);
+                                //  System.out.println("Created a probe");
+                        }
+                }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (bwapi.getSelf().getMinerals() >= 100) {
+                             //   System.out.print("We have 100 minerals to build the assimilator");
+                        }
+                               //need to find location of vespeon gas before building the assimilator
+                                if (unit.getType() == UnitTypes.Protoss_Assimilator) {
+                                }
                 }
         }
         @Override

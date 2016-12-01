@@ -41,9 +41,9 @@ public class ExampleAIClient implements BWAPIEventListener {
 	/**
 	 * Create a Java AI.
 	 */
-	public static void main(String[] args) {
-		new ExampleAIClient();
-	}
+//	public static void main(String[] args) {
+	//	new ExampleAIClient();
+	//}
 	
 	/**
 	 * Instantiates the JNI-BWAPI interface and connects to BWAPI.
@@ -117,7 +117,7 @@ public class ExampleAIClient implements BWAPIEventListener {
 		for (Unit unit : bwapi.getMyUnits()) {
 			// Note you can use referential equality
 			if (unit.getType() == UnitTypes.Zerg_Larva) {
-				if (bwapi.getSelf().getMinerals() >= 50 && !morphedDrone) {
+				if (bwapi.getSelf().getMinerals() >= 50 && !morphedDrone ) {
 					unit.morph(UnitTypes.Zerg_Drone);
 					morphedDrone = true;
 				}
