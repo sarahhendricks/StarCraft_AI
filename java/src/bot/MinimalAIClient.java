@@ -24,6 +24,7 @@ import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
+        private Unit newProbe;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -44,12 +45,33 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
                 //bwapi.setGameSpeed(0);
+
+                newProbe = null;
         }
 
         @Override
         public void matchFrame() {
                 for (Unit u : bwapi.getAllUnits()) {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                }
+
+                if (bwapi.getSelf().getSupplyUsed() +2 >= bwapi.getSelf().getSupplyTotal()){
+                    if (bwapi.getSelf().getMinerals() >= 100 && newProbe == null){
+                        for (Unit unit : bwapi.getMyUnits()){
+                            if(unit.getType() == UnitTypes.Protoss_Probe){
+                                newProbe = unit;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (bwapi.getSelf().getMinerals() >= 100){
+                        for (Unit unit: bwapi.getMyUnits()){
+                            if(unit.getType() == UnitTypes.Protoss_Probe){
+                                newProbe.build(unit.getPosition(), UnitTypes.Protoss_Pylon);
+                            }
+                        }
+                    }
                 }
 
                 for (Unit unit : bwapi.getMyUnits()) {
@@ -92,12 +114,28 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
                 for (Unit unit : bwapi.getMyUnits()) {
-                        if (bwapi.getSelf().getMinerals() >= 100) {
-                             //   System.out.print("We have 100 minerals to build the assimilator");
-                        }
-                               //need to find location of vespeon gas before building the assimilator
-                                if (unit.getType() == UnitTypes.Protoss_Assimilator) {
+                        if (bwapi.getSelf().getMinerals() >= 150) {
+                                //System.out.print("We have 150 minerals to build the gateway");
+                            //find nexus
+                            for (Unit nexus : bwapi.getMyUnits()) {
+                                if (nexus.getType() == UnitTypes.Protoss_Nexus) {
+                                    System.out.print("Position");
+                                    System.out.print(nexus.getPosition().getBX());
+                                    System.out.print(nexus.getPosition().getBX());
+                                    //System.out.print(nexus.getPosition());
                                 }
+                            }
+                            //build
+                                for (Unit probe : bwapi.getMyUnits()) {
+                                        if (probe.getType() == UnitTypes.Protoss_Probe) {
+                                                if (probe.isInterruptable()) {
+                                                        //build gateway near probe
+                                                        System.out.println (probe.getType());
+                                                        probe.build(probe.getPosition(), UnitTypes.Protoss_Gateway);
+                                                }
+                                        }
+                                }
+                        }
                 }
         }
         @Override
