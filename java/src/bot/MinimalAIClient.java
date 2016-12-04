@@ -1,17 +1,10 @@
 package bot;
 
-import java.util.HashSet;
-
-import jnibwapi.BWAPIEventListener;
-import jnibwapi.JNIBWAPI;
-import jnibwapi.Position;
-import jnibwapi.Unit;
-import jnibwapi.types.TechType;
-import jnibwapi.types.TechType.TechTypes;
-import jnibwapi.types.UnitType;
+import java.util.Iterator;
+import java.util.Set;
+import jnibwapi.*;
+import jnibwapi.types.*;
 import jnibwapi.types.UnitType.UnitTypes;
-import jnibwapi.types.UpgradeType;
-import jnibwapi.types.UpgradeType.UpgradeTypes;
 
 /**
  * Example of a Java AI Client that does nothing.
@@ -24,6 +17,8 @@ import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
+
+        private Set<Player> enemies;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -44,6 +39,21 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
                 //bwapi.setGameSpeed(0);
+
+                // Determine what race the enemy is.
+                enemies = bwapi.getEnemies();
+                for (Iterator<Player> it = enemies.iterator(); it.hasNext(); ) {
+                        RaceType race = it.next().getRace();
+                        if (race.equals(RaceType.RaceTypes.Protoss)) {
+                                System.out.println("enemy is protoss");
+                        }
+                        else if (race.equals(RaceType.RaceTypes.Zerg)) {
+                                System.out.println("enemy is zerg");
+                        }
+                        else {
+                                System.out.println("enemy is terran");
+                        }
+                }
         }
 
         @Override
@@ -80,15 +90,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (bwapi.getSelf().getMinerals() >= 60) {
                                 //System.out.print("We have 50 minerals");
                                 //make a new probe
-                                if (nexus.getType() == UnitTypes.Protoss_Nexus) {
-                                        nexus.build(nexus.getPosition(), UnitTypes.Protoss_Probe);
-                                        nexus.morph(UnitTypes.Protoss_Probe);
-
-                                        // System.out.println("build Probe");
+                                if (bwapi.getSelf().getSupplyUsed() >= 8) {
+                                        if (nexus.getType() == UnitTypes.Protoss_Nexus) {
+                                                nexus.train(UnitTypes.Protoss_Probe);
+                                                System.out.println("build Probe");
+                                        }
+                                        //unit.build(unit.getPosition(), UnitTypes.Protoss_Probe);
+                                        // unit.morph(UnitTypes.Protoss_Probe);
+                                        //  System.out.println("Created a probe");
                                 }
-                                //unit.build(unit.getPosition(), UnitTypes.Protoss_Probe);
-                                // unit.morph(UnitTypes.Protoss_Probe);
-                                //  System.out.println("Created a probe");
                         }
                 }
                 for (Unit unit : bwapi.getMyUnits()) {
