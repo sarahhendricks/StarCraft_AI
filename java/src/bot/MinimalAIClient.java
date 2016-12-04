@@ -72,6 +72,27 @@ public class MinimalAIClient implements BWAPIEventListener {
          * The game strategy for Zerg enemies.
          */
         private void protossVsZerg() {
+                /* build order
+                 * 8 - Pylon at Natural Expansion[1]
+                 * 10 - Forge[2]
+                 * 13 - two Photon Cannons[3]
+                 * 15 - Pylon[4]
+                 * 18 - Nexus
+                 * 18 - Gateway [5]
+                 * 20 - Assimilator [6]
+                 * 22 - Cybernetics Core
+                 * 25/26 - Assimilator[7]
+                 * @ 100% Cybernetics Core - Dragoon[8]
+                 * 100% Cybernetics Core - Stargate
+                 * @ 100 Gas - Citadel of Adun[9]
+                 * @ 100 Gas - Corsair
+                 * @ 100 Gas - +1 Ground Attack
+                 * @ 200 Gas - Templar Archives
+                 * 3 Gateways
+                 * @ 100% Templar Archives - 2 Archons[10]
+                 * @ 2 Archons - Zealot Speedupgrade
+                 * @ ~95% +1 Attack Upgrade - Army moves out
+                 */
         }
 
         /*
