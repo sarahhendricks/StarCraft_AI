@@ -20,6 +20,8 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         private Set<Player> enemies;
 
+        private RaceType enemy;
+
         public static void main(String[] args) {
                 new MinimalAIClient();
         }
@@ -46,14 +48,35 @@ public class MinimalAIClient implements BWAPIEventListener {
                         RaceType race = it.next().getRace();
                         if (race.equals(RaceType.RaceTypes.Protoss)) {
                                 System.out.println("enemy is protoss");
+                                enemy = RaceType.RaceTypes.Protoss;
                         }
                         else if (race.equals(RaceType.RaceTypes.Zerg)) {
                                 System.out.println("enemy is zerg");
+                                enemy = RaceType.RaceTypes.Zerg;
                         }
                         else {
                                 System.out.println("enemy is terran");
+                                enemy = RaceType.RaceTypes.Terran;
                         }
                 }
+        }
+
+        /*
+         * The game strategy for Terran enemies.
+         */
+        private void protossVsTerran() {
+        }
+
+        /*
+         * The game strategy for Zerg enemies.
+         */
+        private void protossVsZerg() {
+        }
+
+        /*
+         * The game strategy for Protoss enemies.
+         */
+        private void protossVsProtoss() {
         }
 
         @Override
@@ -108,6 +131,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                                //need to find location of vespeon gas before building the assimilator
                                 if (unit.getType() == UnitTypes.Protoss_Assimilator) {
                                 }
+                }
+
+                // branching off into our enemy-specific games
+                if (enemy == RaceType.RaceTypes.Protoss) {
+                        protossVsProtoss();
+                }
+                else if (enemy == RaceType.RaceTypes.Terran) {
+                        protossVsTerran();
+                }
+                else {
+                        protossVsZerg();
                 }
         }
         @Override
