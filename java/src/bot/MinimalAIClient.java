@@ -24,6 +24,8 @@ import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
+        /** the prove that has been assigned to build */
+        private Unit poolProbe;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -43,19 +45,45 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
-                //bwapi.setGameSpeed(0);
+                bwapi.setGameSpeed(1);
+                poolProbe = null;
         }
 
         @Override
         public void matchFrame() {
                 for (Unit u : bwapi.getAllUnits()) {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+
+                        //build the unit to build a pylon
+                        if (bwapi.getSelf().getMinerals() >= 100 && poolProbe == null) {
+                                for (Unit unit : bwapi.getMyUnits()){
+                                        if (unit.getType() == UnitTypes.Protoss_Probe) {
+                                                poolProbe = unit;
+                                                break;
+                                        }
+                                }
+                        }
+
+                        if (bwapi.getSelf().getMinerals() >= 100) {
+                                //build the assimilator
+                                for (Unit unit : bwapi.getMyUnits()) {
+                                        if (unit.getType() == UnitTypes.Protoss_Probe) {
+                                               // poolProbe.build(unit.getPosition(), UnitTypes.Protoss_Pylon);
+                                                for (Unit vespene : bwapi.getNeutralUnits()) {
+                                                        if (vespene.getType().isResourceContainer() && vespene.getType() == UnitTypes.Resource_Vespene_Geyser) {
+                                                       // if (vespene.getType() == UnitTypes.Resource_Vespene_Geyser) {
+                                                               System.out.print("hello");
+                                                       //         System.out.print(vespene.getPosition().getBY());
+                                                              poolProbe.build(vespene.getTilePosition(), UnitTypes.Protoss_Assimilator);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
                 }
 
                 for (Unit unit : bwapi.getMyUnits()) {
-                        // System.out.println("Print should be collecting minerals in this loop");
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
-                                //   System.out.println("GFound our probes!");
                                 // You can use referential equality for units, too
                                 if (unit.isIdle()) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
@@ -73,33 +101,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
                 }
-
-                //here we will create another protoss probe once we have 50 minerals
-                // create new probe
-                for (Unit nexus : bwapi.getMyUnits()) {
-                        if (bwapi.getSelf().getMinerals() >= 60) {
-                                //System.out.print("We have 50 minerals");
-                                //make a new probe
-                                if (nexus.getType() == UnitTypes.Protoss_Nexus) {
-                                        nexus.build(nexus.getPosition(), UnitTypes.Protoss_Probe);
-                                        nexus.morph(UnitTypes.Protoss_Probe);
-
-                                        // System.out.println("build Probe");
-                                }
-                                //unit.build(unit.getPosition(), UnitTypes.Protoss_Probe);
-                                // unit.morph(UnitTypes.Protoss_Probe);
-                                //  System.out.println("Created a probe");
-                        }
                 }
-                for (Unit unit : bwapi.getMyUnits()) {
-                        if (bwapi.getSelf().getMinerals() >= 100) {
-                             //   System.out.print("We have 100 minerals to build the assimilator");
-                        }
-                               //need to find location of vespeon gas before building the assimilator
-                                if (unit.getType() == UnitTypes.Protoss_Assimilator) {
-                                }
-                }
-        }
         @Override
         public void keyPressed(int keyCode) {}
         @Override
