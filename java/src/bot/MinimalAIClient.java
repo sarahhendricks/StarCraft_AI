@@ -53,6 +53,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         else if (race.equals(RaceType.RaceTypes.Zerg)) {
                                 System.out.println("enemy is zerg");
                                 enemy = RaceType.RaceTypes.Zerg;
+
                         }
                         else {
                                 System.out.println("enemy is terran");
@@ -79,12 +80,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         private void protossVsProtoss() {
         }
 
+        /*
+         * This runs every game frame (multiple times a second!!)
+         */
         @Override
         public void matchFrame() {
                 for (Unit u : bwapi.getAllUnits()) {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
 
+                // Collecting minerals
                 for (Unit unit : bwapi.getMyUnits()) {
                         // System.out.println("Print should be collecting minerals in this loop");
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
@@ -119,9 +124,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                 System.out.println("build Probe");
                                         }
                                         //unit.build(unit.getPosition(), UnitTypes.Protoss_Probe);
-                                        // unit.morph(UnitTypes.Protoss_Probe);
-                                        //  System.out.println("Created a probe");
-                                }
+                                        }
                         }
                 }
                 for (Unit unit : bwapi.getMyUnits()) {
