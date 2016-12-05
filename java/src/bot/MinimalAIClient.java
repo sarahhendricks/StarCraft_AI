@@ -72,15 +72,18 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                 for (Unit vespene : bwapi.getNeutralUnits()) {
                                                         if (vespene.getType().isResourceContainer() && vespene.getType() == UnitTypes.Resource_Vespene_Geyser) {
                                                        // if (vespene.getType() == UnitTypes.Resource_Vespene_Geyser) {
-                                                               System.out.print("hello");
-                                                       //         System.out.print(vespene.getPosition().getBY());
-                                                              poolProbe.build(vespene.getTilePosition(), UnitTypes.Protoss_Assimilator);
+                                                                double distanceV = unit.getDistance(vespene);
+                                                                System.out.print(distanceV);
+                                                               // Position vspeneLoc = new Position(vespene.getPosition().getBX(),vespene.getPosition().getBY());
+                                                              if (distanceV < 0.50) {
+                                                                      poolProbe.build(unit.getPosition(), UnitTypes.Protoss_Pylon);
+                                                              }
+                                                              }
                                                         }
                                                 }
                                         }
                                 }
                         }
-                }
 
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
