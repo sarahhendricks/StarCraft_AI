@@ -25,7 +25,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit poolProbe;
         private Unit nexus;
         private Unit geyser;
-
+        private Unit minerals;
         Position geyserPosition;
         Position nexusPosition;
         Position mineralPosition;
@@ -63,10 +63,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 poolProbe = u;
                         }
                         // Print some position information, to understand how it works.
-                        System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
+                   //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
                 }
+                for (Unit u : bwapi.getNeutralUnits()) {
+                        baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
+                        if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
+                                minerals = u;
+                        }
 
-
+                }
         }
 
         @Override
@@ -90,7 +95,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
                                                         //& !claimedMinerals.contains(minerals)
-                                                        mineralPosition = minerals.getTilePosition();
+                                                       // mineralPosition = minerals.getTilePosition();
                                                         //bwapi.drawCircle(mineralPosition, 8, BWColor.Red, true, false);
                                                      //   bwapi.drawBox();
                                                         double distance = unit.getDistance(minerals);
@@ -160,6 +165,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public Position placement(){
+
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
               //  nexusPosition = nexus.getTilePosition();
                 nexusPosition = nexus.getPosition();
@@ -169,8 +175,36 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int yBuild = nexusPosition.getY(Position.PosType.PIXEL);
                 //System.out.print("X-BUILD " + xBuild);
                // System.out.print("Y-BUILD " + yBuild);
-                newBuildingPosition = new Position((xBuild), (yBuild + 100));
+                newBuildingPosition = new Position((xBuild + 200), (yBuild));
               //  System.out.print(newBuildingPosition);
+                mineralPosition = minerals.getPosition();
+                int xMin =  mineralPosition.getX(Position.PosType.PIXEL);
+                int yMin= mineralPosition.getY(Position.PosType.PIXEL);
+               // System.out.print(xMin);
+               // System.out.print(yMin);
+
+                if (xBuild > xMin){
+                        //nexus right of minerals so build to the right
+                        //Add X value
+                        xBuild = xBuild+200;
+
+                }
+                else{
+                        //nexus left of minerals build to left
+                        //Subtract X value
+                        xBuild = xBuild - 200;
+                }
+                if (yBuild > yMin){
+                        //nexus top of minerals so build to the top of nexus
+                        yBuild = yBuild - 200;
+                }
+                else{
+                        //nexus bottom of minerals so build to the bottom of nexus
+                        //subtract Y value
+                        yBuild = yBuild - 200;
+                }
+                newBuildingPosition = new Position(xBuild, yBuild);
+
                 bwapi.drawCircle(newBuildingPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(nexusPosition, 5, BWColor.Green, true, false);
 
