@@ -27,8 +27,11 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit geyser;
 
         Position geyserPosition;
+        Position nexusPosition;
         Region baseRegion;
         boolean hasAssimilator = false;
+
+        Position newBuildingPosition;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -57,7 +60,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                         } else if (u.getType() == UnitTypes.Protoss_Probe && poolProbe == null) {
                                 poolProbe = u;
                         }
-
                         // Print some position information, to understand how it works.
                         System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
                 }
@@ -73,6 +75,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //System.out.print(hasAssimilator);
                 buildProbes(mineralCount);
                 buildPylons(mineralCount);
+                placement();
         }
 
         //a function to collect Mineral
@@ -85,7 +88,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                 if (minerals.getType().isMineralField()) {
                                                         //& !claimedMinerals.contains(minerals)
                                                         double distance = unit.getDistance(minerals);
-
                                                         if (distance < 300) {
                                                                 unit.rightClick(minerals, false);
                                                                 //claimedMinerals.add(minerals);
@@ -117,20 +119,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 hasAssimilator = true;
                         }
                 }
-
-
                 for (Unit u : bwapi.getAllUnits()) {
-
                         if (geyserPosition != null) {
                                 bwapi.drawCircle(geyserPosition, 1, BWColor.Yellow, true, false);
-//                                System.out.println("Hello.");
                         }
-
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
-
                 }
         }
-        public void buildProbes(int mineralCount){
+
+        public void buildProbes(int mineralCount, Position newPosition){
                 for (Unit unit : bwapi.getMyUnits()){
                         if (unit.getType() == UnitTypes.Protoss_Nexus && mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
                                 unit.train(UnitTypes.Protoss_Probe);
@@ -142,7 +139,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 System.out.println(bwapi.getSelf().getSupplyUsed());
                 System.out.println(bwapi.getSelf().getSupplyTotal());
                 if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
-                        System.out.println("Got supplies, start building pylons.");
+                      //  System.out.println("Got supplies, start building pylons.");
                                 //build the pylon
                                 for (Unit unit : bwapi.getMyUnits()) {
                                         if (unit.getType() == UnitTypes.Protoss_Probe) {
@@ -150,6 +147,29 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         }
                                 }
                         }
+        }
+
+        public void buildGateway(int mineralCount){
+
+        }
+
+        public void placement(){
+                baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
+              //  nexusPosition = nexus.getTilePosition();
+                nexusPosition = nexus.getPosition();
+                //System.out.print("This is  getTilePosition() " + nexusPosition);
+                //System.out.print("This is  getPosition() " +nexusPosition);
+                int xBuild = nexusPosition.getX(Position.PosType.PIXEL);
+                int yBuild = nexusPosition.getY(Position.PosType.PIXEL);
+                System.out.print("X-BUILD " + xBuild);
+                System.out.print("Y-BUILD " + yBuild);
+                newBuildingPosition = new Position((xBuild), (yBuild + 100));
+                System.out.print(newBuildingPosition);
+                bwapi.drawCircle(newBuildingPosition, 5, BWColor.White, true, false);
+                bwapi.drawCircle(nexusPosition, 5, BWColor.Green, true, false);
+                //nexusPosition = nexus.getPosition();
+
+
         }
         @Override
         public void keyPressed(int keyCode) {}
