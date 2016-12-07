@@ -134,7 +134,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (geyserPosition != null) {
                                 bwapi.drawCircle(geyserPosition, 5, BWColor.Yellow, true, false);
                         }
-                       // bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                       bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
         }
 
@@ -171,22 +171,26 @@ public class MinimalAIClient implements BWAPIEventListener {
                 nexusPosition = nexus.getPosition();
                 //System.out.print("This is  getTilePosition() " + nexusPosition);
                 //System.out.print("This is  getPosition() " +nexusPosition);
+                //getting the X Y positions of the nexus
                 int xBuild = nexusPosition.getX(Position.PosType.PIXEL);
                 int yBuild = nexusPosition.getY(Position.PosType.PIXEL);
                 //System.out.print("X-BUILD " + xBuild);
                // System.out.print("Y-BUILD " + yBuild);
-                newBuildingPosition = new Position((xBuild + 200), (yBuild));
+
               //  System.out.print(newBuildingPosition);
                 mineralPosition = minerals.getPosition();
+                //getting the X Y coordinate of the mineral positions
                 int xMin =  mineralPosition.getX(Position.PosType.PIXEL);
                 int yMin= mineralPosition.getY(Position.PosType.PIXEL);
+
                // System.out.print(xMin);
                // System.out.print(yMin);
-
+                int pixelPosiCounter = 50;
+                int pixelNegaCounter = 50;
                 if (xBuild > xMin){
                         //nexus right of minerals so build to the right
                         //Add X value
-                        xBuild = xBuild+200;
+                        xBuild = xBuild + 100 + pixelPosiCounter;
 
                 }
                 else{
@@ -196,13 +200,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 if (yBuild > yMin){
                         //nexus top of minerals so build to the top of nexus
-                        yBuild = yBuild - 200;
+                        yBuild = yBuild + 100 + pixelPosiCounter;
                 }
                 else{
                         //nexus bottom of minerals so build to the bottom of nexus
                         //subtract Y value
                         yBuild = yBuild - 200;
                 }
+                //euclidean distance to not build in this area
                 newBuildingPosition = new Position(xBuild, yBuild);
 
                 bwapi.drawCircle(newBuildingPosition, 8, BWColor.White, true, false);
