@@ -28,7 +28,9 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         Position geyserPosition;
         Position nexusPosition;
+        Position mineralPosition;
         Region baseRegion;
+
         boolean hasAssimilator = false;
 
         Position newBuildingPosition;
@@ -85,8 +87,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 // You can use referential equality for units, too
                                 if (unit.isIdle() && unit != poolProbe) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
-                                                if (minerals.getType().isMineralField()) {
+                                                baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
+                                                if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
                                                         //& !claimedMinerals.contains(minerals)
+                                                        mineralPosition = minerals.getTilePosition();
+                                                        //bwapi.drawCircle(mineralPosition, 8, BWColor.Red, true, false);
+                                                     //   bwapi.drawBox();
                                                         double distance = unit.getDistance(minerals);
                                                         if (distance < 300) {
                                                                 unit.rightClick(minerals, false);
@@ -121,13 +127,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 for (Unit u : bwapi.getAllUnits()) {
                         if (geyserPosition != null) {
-                                bwapi.drawCircle(geyserPosition, 1, BWColor.Yellow, true, false);
+                                bwapi.drawCircle(geyserPosition, 5, BWColor.Yellow, true, false);
                         }
-                        bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                       // bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
         }
 
-        public void buildProbes(int mineralCount, Position newPosition){
+        public void buildProbes(int mineralCount){
                 for (Unit unit : bwapi.getMyUnits()){
                         if (unit.getType() == UnitTypes.Protoss_Nexus && mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
                                 unit.train(UnitTypes.Protoss_Probe);
@@ -136,14 +142,14 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public void buildPylons(int mineralCount){
-                System.out.println(bwapi.getSelf().getSupplyUsed());
-                System.out.println(bwapi.getSelf().getSupplyTotal());
+               // System.out.println(bwapi.getSelf().getSupplyUsed());
+               // System.out.println(bwapi.getSelf().getSupplyTotal());
                 if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
                       //  System.out.println("Got supplies, start building pylons.");
                                 //build the pylon
                                 for (Unit unit : bwapi.getMyUnits()) {
                                         if (unit.getType() == UnitTypes.Protoss_Probe) {
-                                                poolProbe.build(unit.getPosition(), UnitTypes.Protoss_Pylon);
+                                                poolProbe.build(newBuildingPosition, UnitTypes.Protoss_Pylon);
                                         }
                                 }
                         }
@@ -153,7 +159,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         }
 
-        public void placement(){
+        public Position placement(){
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
               //  nexusPosition = nexus.getTilePosition();
                 nexusPosition = nexus.getPosition();
@@ -161,14 +167,16 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //System.out.print("This is  getPosition() " +nexusPosition);
                 int xBuild = nexusPosition.getX(Position.PosType.PIXEL);
                 int yBuild = nexusPosition.getY(Position.PosType.PIXEL);
-                System.out.print("X-BUILD " + xBuild);
-                System.out.print("Y-BUILD " + yBuild);
+                //System.out.print("X-BUILD " + xBuild);
+               // System.out.print("Y-BUILD " + yBuild);
                 newBuildingPosition = new Position((xBuild), (yBuild + 100));
-                System.out.print(newBuildingPosition);
-                bwapi.drawCircle(newBuildingPosition, 5, BWColor.White, true, false);
+              //  System.out.print(newBuildingPosition);
+                bwapi.drawCircle(newBuildingPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(nexusPosition, 5, BWColor.Green, true, false);
-                //nexusPosition = nexus.getPosition();
 
+                //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
+                //nexusPosition = nexus.getPosition();
+                return newBuildingPosition;
 
         }
         @Override
