@@ -27,6 +27,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit geyser;
 
         Position geyserPosition;
+        Region baseRegion;
         boolean hasAssimilator = false;
 
         public static void main(String[] args) {
@@ -69,6 +70,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int mineralCount = bwapi.getSelf().getMinerals();
                 buildAssimilator(mineralCount);
                 collectMinerals();
+                //System.out.print(hasAssimilator);
+                buildProbes(mineralCount);
+                buildPylons(mineralCount);
         }
 
         //a function to collect Mineral
@@ -96,10 +100,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         //a function to build the assimilator
         public void buildAssimilator(int mineralCount){
                 if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
-
                         for (Unit vespene : bwapi.getNeutralUnits()) {
                                 // Get the geyser that's in our base.
-                                Region baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
+                                baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                 if (vespene.getType() == UnitTypes.Resource_Vespene_Geyser && bwapi.getMap().getRegion(vespene.getPosition()) == baseRegion) {
                                         // Use tile positions for building.
                                         geyserPosition = vespene.getTilePosition();
@@ -126,6 +129,27 @@ public class MinimalAIClient implements BWAPIEventListener {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
 
                 }
+        }
+        public void buildProbes(int mineralCount){
+                for (Unit unit : bwapi.getMyUnits()){
+                        if (unit.getType() == UnitTypes.Protoss_Nexus && mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
+                                unit.train(UnitTypes.Protoss_Probe);
+                        }
+                }
+        }
+
+        public void buildPylons(int mineralCount){
+                System.out.println(bwapi.getSelf().getSupplyUsed());
+                System.out.println(bwapi.getSelf().getSupplyTotal());
+                if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
+                        System.out.println("Got supplies, start building pylons.");
+                                //build the pylon
+                                for (Unit unit : bwapi.getMyUnits()) {
+                                        if (unit.getType() == UnitTypes.Protoss_Probe) {
+                                                poolProbe.build(unit.getPosition(), UnitTypes.Protoss_Pylon);
+                                        }
+                                }
+                        }
         }
         @Override
         public void keyPressed(int keyCode) {}
