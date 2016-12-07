@@ -66,9 +66,35 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         @Override
         public void matchFrame() {
-
                 int mineralCount = bwapi.getSelf().getMinerals();
+                buildAssimilator(mineralCount);
+                collectMinerals();
+        }
 
+        //a function to collect Mineral
+        public void collectMinerals(){
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Probe) {
+                                // You can use referential equality for units, too
+                                if (unit.isIdle() && unit != poolProbe) {
+                                        for (Unit minerals : bwapi.getNeutralUnits()) {
+                                                if (minerals.getType().isMineralField()) {
+                                                        //& !claimedMinerals.contains(minerals)
+                                                        double distance = unit.getDistance(minerals);
+
+                                                        if (distance < 300) {
+                                                                unit.rightClick(minerals, false);
+                                                                //claimedMinerals.add(minerals);
+                                                                break;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+        //a function to build the assimilator
+        public void buildAssimilator(int mineralCount){
                 if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
 
                         for (Unit vespene : bwapi.getNeutralUnits()) {
@@ -100,28 +126,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
 
                 }
-
-                for (Unit unit : bwapi.getMyUnits()) {
-                        if (unit.getType() == UnitTypes.Protoss_Probe) {
-                                // You can use referential equality for units, too
-                                if (unit.isIdle() && unit != poolProbe) {
-                                        for (Unit minerals : bwapi.getNeutralUnits()) {
-                                                if (minerals.getType().isMineralField()) {
-                                                        //& !claimedMinerals.contains(minerals)
-                                                        double distance = unit.getDistance(minerals);
-
-                                                        if (distance < 300) {
-                                                                unit.rightClick(minerals, false);
-                                                                //claimedMinerals.add(minerals);
-                                                                break;
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
         }
-
         @Override
         public void keyPressed(int keyCode) {}
         @Override
