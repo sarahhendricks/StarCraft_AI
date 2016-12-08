@@ -21,23 +21,29 @@ import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
-        /** the prove that has been assigned to build */
+
+        //units that are used in multiple functions
         private Unit poolProbe;
         private Unit nexus;
         private Unit geyser;
         private Unit minerals;
         private Unit gateway;
+
+        //neutral unit positions
         Position geyserPosition;
         Position nexusPosition;
         Position mineralPosition;
+
+        //our base region variable
         Region baseRegion;
 
+        //booleans to check if a building exists
         boolean hasAssimilator = false;
         boolean hasGateway = false;
         boolean hasCyber = false;
 
 
-
+        //positioning for buildings
         Position pylonPosition;
         Position gatewayPosition;
         Position cyberPosition;
@@ -85,6 +91,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void matchFrame() {
                 int mineralCount = bwapi.getSelf().getMinerals();
                 int gasCount = bwapi.getSelf().getGas();
+                //calling the functions in the matchframe
                 buildAssimilator(mineralCount);
                 collectMinerals();
                 //System.out.print(hasAssimilator);
@@ -125,6 +132,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
+        // a Function to collect Gas
+        public void collectGas(){
+
+        }
+
         //a function to build the assimilator
         public void buildAssimilator(int mineralCount){
                 if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
@@ -153,6 +166,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         }
 
+        //function to build probes
         public void buildProbes(int mineralCount){
                 //want to limit the numbeer of probes being built
                         if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
@@ -160,6 +174,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
         }
 
+        //function to build pylons
         public void buildPylons(int mineralCount){
                // System.out.println(bwapi.getSelf().getSupplyUsed());
                // System.out.println(bwapi.getSelf().getSupplyTotal());
@@ -169,12 +184,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
 
+        //function to create a gateway
         public void buildGateway(int mineralCount){
                 if (mineralCount >150 && poolProbe.isIdle() ){
                         poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
                         hasGateway = true;
                         }
                 }
+
+        //function to create a cybernetics core
         public void buildCyber(int mineralCount){
                 if (hasGateway && mineralCount > 300){
                         poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
@@ -182,6 +200,8 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 }
         }
+
+        //function to create dragoons
         public void buildDrag(int mineralCount, int gasCount){
                 if(hasCyber && mineralCount > 300 && gasCount > 50){
                         for (Unit unit : bwapi.getMyUnits()) {
@@ -192,6 +212,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
+        //function to create zealots
         public void buildZealots(int mineralCount) {
                 if (hasGateway) {
                         for (Unit unit : bwapi.getMyUnits()) {
@@ -202,6 +224,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+        //function trying to find the radius of the pylon
         public void pylonRadius() {
                 for (Unit pylon : bwapi.getMyUnits()) {
                         if (pylon.getType() == UnitTypes.Protoss_Pylon) {
