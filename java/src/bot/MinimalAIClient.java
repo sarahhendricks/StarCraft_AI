@@ -41,12 +41,15 @@ public class MinimalAIClient implements BWAPIEventListener {
         boolean hasAssimilator = false;
         boolean hasGateway = false;
         boolean hasCyber = false;
-
+        boolean hasCitadel = false;
+        boolean hasArchives = false;
 
         //positioning for buildings
         Position pylonPosition;
         Position gatewayPosition;
         Position cyberPosition;
+        Position citadelPosition;
+        Position archivesPosition;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -100,9 +103,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
-
+               // buildCitadel(mineralCount, gasCount);
                 buildCyber(mineralCount);
-                buildDrag(mineralCount , gasCount);
+               // buildTemplarArchive(mineralCount);
+              //  buildDrag(mineralCount , gasCount);
                // buildZealots(mineralCount);
 
         }
@@ -200,6 +204,18 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 }
         }
+        public void buildCitadel(int mineralCount, int gasCount){
+                if ( mineralCount > 350 && gasCount > 100 && poolProbe.isIdle()) {
+                        poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
+                }
+        }
+        public void buildTemplarArchive(int mineralCount) {
+                //need citadel made beforehand
+                if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
+                        poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
+                        hasArchives = true;
+                }
+        }
 
         //function to create dragoons
         public void buildDrag(int mineralCount, int gasCount){
@@ -285,10 +301,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 pylonPosition = new Position(xBuild, yBuild);
                 gatewayPosition = new Position(xBuild+70, yBuild+70);
                 cyberPosition = new Position(xBuild-70, yBuild-70);
+                citadelPosition = new Position(xBuild+90, yBuild-50);
+                archivesPosition = new Position(xBuild-80, yBuild+40);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
                 bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
+                bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
+                bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
 
 
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
