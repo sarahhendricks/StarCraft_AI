@@ -26,14 +26,17 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit nexus;
         private Unit geyser;
         private Unit minerals;
+        private Unit gateway;
         Position geyserPosition;
         Position nexusPosition;
         Position mineralPosition;
         Region baseRegion;
 
         boolean hasAssimilator = false;
+        boolean hasGateway = false;
 
-        Position newBuildingPosition;
+
+        Position pylonPosition;
         Position gatewayPosition;
 
         public static void main(String[] args) {
@@ -86,6 +89,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
+                buildZealots(mineralCount);
 
         }
 
@@ -126,7 +130,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         break;
                                 }
                         }
-
                         if (poolProbe.isIdle()) {
                                 poolProbe.build(geyserPosition, UnitTypes.Protoss_Assimilator);
                                 // The below is not good enough logic to ensure a building is actually being constructed.
@@ -144,11 +147,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public void buildProbes(int mineralCount){
-                for (Unit unit : bwapi.getMyUnits()){
-                        if (unit.getType() == UnitTypes.Protoss_Nexus && mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
-                                unit.train(UnitTypes.Protoss_Probe);
+                        if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
+                                nexus.train(UnitTypes.Protoss_Probe);
                         }
-                }
         }
 
         public void buildPylons(int mineralCount){
@@ -156,18 +157,26 @@ public class MinimalAIClient implements BWAPIEventListener {
                // System.out.println(bwapi.getSelf().getSupplyTotal());
                 if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
                                 //build the pylon
-                                poolProbe.build(newBuildingPosition, UnitTypes.Protoss_Pylon);
+                                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                                 }
                         }
 
         public void buildGateway(int mineralCount){
                 if (mineralCount >150){
-                        //  System.out.println("Got supplies, start building pylons.");
-                        //build the pylon
                         poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+                        hasGateway = true;
                         }
                 }
-
+        public void buildZealots(int mineralCount) {
+                if (hasGateway) {
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                        gateway = unit;
+                                        gateway.train(UnitTypes.Protoss_Zealot);
+                                }
+                        }
+                }
+        }
         public void pylonRadius() {
                 for (Unit pylon : bwapi.getMyUnits()) {
                         if (pylon.getType() == UnitTypes.Protoss_Pylon) {
@@ -225,10 +234,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                         yBuild = yBuild - 200;
                 }
                 //euclidean distance to not build in this area
-                newBuildingPosition = new Position(xBuild, yBuild);
-                gatewayPosition = new Position(xBuild+80, yBuild+35);
+                pylonPosition = new Position(xBuild, yBuild);
+                gatewayPosition = new Position(xBuild+70, yBuild+70);
 
-                bwapi.drawCircle(newBuildingPosition, 8, BWColor.White, true, false);
+                bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
 
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
