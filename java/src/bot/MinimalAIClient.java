@@ -34,10 +34,13 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         boolean hasAssimilator = false;
         boolean hasGateway = false;
+        boolean hasCyber = false;
+
 
 
         Position pylonPosition;
         Position gatewayPosition;
+        Position cyberPosition;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -81,6 +84,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         @Override
         public void matchFrame() {
                 int mineralCount = bwapi.getSelf().getMinerals();
+                int gasCount = bwapi.getSelf().getGas();
                 buildAssimilator(mineralCount);
                 collectMinerals();
                 //System.out.print(hasAssimilator);
@@ -89,7 +93,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
-                buildZealots(mineralCount);
+
+                buildCyber(mineralCount);
+                buildDrag(mineralCount , gasCount);
+               // buildZealots(mineralCount);
 
         }
 
@@ -147,6 +154,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public void buildProbes(int mineralCount){
+                //want to limit the numbeer of probes being built
                         if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
                                 nexus.train(UnitTypes.Protoss_Probe);
                         }
@@ -162,11 +170,28 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
 
         public void buildGateway(int mineralCount){
-                if (mineralCount >150){
+                if (mineralCount >150 && poolProbe.isIdle() ){
                         poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
                         hasGateway = true;
                         }
                 }
+        public void buildCyber(int mineralCount){
+                if (hasGateway && mineralCount > 300){
+                        poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
+                        hasCyber = true;
+
+                }
+        }
+        public void buildDrag(int mineralCount, int gasCount){
+                if(hasCyber && mineralCount > 300 && gasCount > 50){
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                        gateway = unit;
+                                        gateway.train(UnitTypes.Protoss_Dragoon);
+                                }
+                        }
+                }
+        }
         public void buildZealots(int mineralCount) {
                 if (hasGateway) {
                         for (Unit unit : bwapi.getMyUnits()) {
@@ -236,9 +261,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //euclidean distance to not build in this area
                 pylonPosition = new Position(xBuild, yBuild);
                 gatewayPosition = new Position(xBuild+70, yBuild+70);
+                cyberPosition = new Position(xBuild-70, yBuild-70);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
+                bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
+
 
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
