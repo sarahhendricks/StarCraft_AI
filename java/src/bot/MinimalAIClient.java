@@ -201,13 +201,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if (hasAssimilator) {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit == gasProbe) {
-                                        for (Unit unitz : bwapi.getUnits(bwapi.getSelf())) {
-                                                if (unitz.getType().isRefinery()) {
-                                                        double distance = unit.getDistance(unitz);
+                                        for (Unit refine : bwapi.getUnits(bwapi.getSelf())) {
+                                                if (refine.getType().isRefinery()) {
+                                                        double distance = unit.getDistance(refine);
                                                         if (distance < 300) {
-                                                                unit.gather(unitz, true);
-                                                                //collectGas();
-                                                                unit.rightClick(unitz, false);
+                                                                unit.gather(refine, true);
+                                                                bwapi.drawCircle(unit.getPosition(), 8, BWColor.Yellow, true, false);
                                                                 break;
                                                         }
                                                 }
@@ -233,8 +232,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (poolProbe.isIdle()) {
                                 poolProbe.build(geyserPosition, UnitTypes.Protoss_Assimilator);
                                 // The below is not good enough logic to ensure a building is actually being constructed.
-                                // you should make sure you have an assmilitor in construction before changing hasAssimilator.
-                                        hasAssimilator = true;
+                                // you should make sure you have an assmilitor in construction before changing hasAssimilator
+                                hasAssimilator = true;
                         }
                 }
                 for (Unit u : bwapi.getAllUnits()) {
