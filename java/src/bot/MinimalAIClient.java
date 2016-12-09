@@ -1,14 +1,17 @@
 package bot;
 
+
 import java.util.HashSet;
 
 import jnibwapi.*;
 import jnibwapi.types.TechType;
 import jnibwapi.types.TechType.TechTypes;
 import jnibwapi.types.UnitType;
+
+import java.util.Iterator;
+import java.util.Set;
+import jnibwapi.types.*;
 import jnibwapi.types.UnitType.UnitTypes;
-import jnibwapi.types.UpgradeType;
-import jnibwapi.types.UpgradeType.UpgradeTypes;
 
 /**
  * Example of a Java AI Client that does nothing.
@@ -51,6 +54,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position cyberPosition;
         Position citadelPosition;
         Position archivesPosition;
+        private Set<Player> enemies;
+        private RaceType enemy;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -70,6 +75,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
+
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
                 gasProbe = null;
@@ -90,34 +96,82 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
                                 minerals = u;
                         }
+                }
 
+
+                //bwapi.setGameSpeed(0);
+
+                // Determine what race the enemy is.
+                enemies = bwapi.getEnemies();
+                for (Iterator<Player> it = enemies.iterator(); it.hasNext(); ) {
+                        RaceType race = it.next().getRace();
+                        if (race.equals(RaceType.RaceTypes.Protoss)) {
+                                System.out.println("enemy is protoss");
+                                enemy = RaceType.RaceTypes.Protoss;
+                        }
+                        else if (race.equals(RaceType.RaceTypes.Zerg)) {
+                                System.out.println("enemy is zerg");
+                                enemy = RaceType.RaceTypes.Zerg;
+
+                        }
+                        else {
+                                System.out.println("enemy is terran");
+                                enemy = RaceType.RaceTypes.Terran;
+                        }
                 }
         }
 
+        /*
+         * The game strategy for Terran enemies.
+         */
+        private void protossVsTerran() {
+        }
+
+        /*
+         * The game strategy for Zerg enemies.
+         */
+        private void protossVsZerg() {
+        }
+
+        /*
+         * The game strategy for Protoss enemies.
+         */
+        private void protossVsProtoss() {
+        }
+
+        /*
+         * This runs every game frame (multiple times a second!!)
+         */
         @Override
         public void matchFrame() {
                 int mineralCount = bwapi.getSelf().getMinerals();
                 int gasCount = bwapi.getSelf().getGas();
+                // supply used
+                int supplyUsed = bwapi.getSelf().getSupplyUsed();
+                //supply total
+                int supplyTotal = bwapi.getSelf().getSupplyTotal();
+
                 //calling the functions in the matchframe
                 buildAssimilator(mineralCount);
                 collectMinerals();
                 collectGas();
                 //System.out.print(hasAssimilator);
                 buildProbes(mineralCount);
-                buildPylons(mineralCount);
+                buildPylons(mineralCount, supplyUsed, supplyTotal);
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
                // buildCitadel(mineralCount, gasCount);
                 buildCyber(mineralCount);
                // buildTemplarArchive(mineralCount);
-              //  buildDrag(mineralCount , gasCount);
-               // buildZealots(mineralCount);
+               // buildDrag(mineralCount , gasCount);
+                buildZealots(mineralCount);
 
         }
 
         //a function to collect Mineral
         public void collectMinerals(){
+
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
                                 // You can use referential equality for units, too
@@ -201,10 +255,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount){
-               // System.out.println(bwapi.getSelf().getSupplyUsed());
-               // System.out.println(bwapi.getSelf().getSupplyTotal());
-                if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
+        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
+                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
                                 //build the pylon
                                 poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                                 }
@@ -261,6 +313,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
                 }
+
+                // branching off into our enemy-specific games
+                if (enemy == RaceType.RaceTypes.Protoss) {
+                        protossVsProtoss();
+                }
+                else if (enemy == RaceType.RaceTypes.Terran) {
+                        protossVsTerran();
+                }
+                else {
+                        protossVsZerg();
+                }
         }
         //function trying to find the radius of the pylon
         public void pylonRadius() {
@@ -275,6 +338,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
         public void placement(){
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -331,11 +395,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
                 bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
                 bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
-
-
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
 
+        }
+        public void terranEnemy(){
+            //    if( int dragCount >9 && enemyTerran){
+              //  }
+        }
+        public void protossEnemy(){
+              //  if( dragCount >9 && enemyTerran){
+              //  }
         }
         @Override
         public void keyPressed(int keyCode) {}
