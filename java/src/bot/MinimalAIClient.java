@@ -22,6 +22,7 @@ import jnibwapi.util.BWColor;
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
 
+
         //units that are used in multiple functions
         private Unit poolProbe;
         private Unit nexus;
@@ -94,20 +95,25 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void matchFrame() {
                 int mineralCount = bwapi.getSelf().getMinerals();
                 int gasCount = bwapi.getSelf().getGas();
+                // supply used
+                int supplyUsed = bwapi.getSelf().getSupplyUsed();
+                //supply total
+                int supplyTotal = bwapi.getSelf().getSupplyTotal();
+
                 //calling the functions in the matchframe
                 buildAssimilator(mineralCount);
                 collectMinerals();
                 //System.out.print(hasAssimilator);
                 buildProbes(mineralCount);
-                buildPylons(mineralCount);
+                buildPylons(mineralCount, supplyUsed, supplyTotal);
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
                // buildCitadel(mineralCount, gasCount);
                 buildCyber(mineralCount);
                // buildTemplarArchive(mineralCount);
-              //  buildDrag(mineralCount , gasCount);
-               // buildZealots(mineralCount);
+               // buildDrag(mineralCount , gasCount);
+                buildZealots(mineralCount);
 
         }
 
@@ -179,10 +185,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount){
-               // System.out.println(bwapi.getSelf().getSupplyUsed());
-               // System.out.println(bwapi.getSelf().getSupplyTotal());
-                if (bwapi.getSelf().getSupplyUsed() + 2 >= bwapi.getSelf().getSupplyTotal() && mineralCount >100){
+        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
+                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
                                 //build the pylon
                                 poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                                 }
@@ -253,6 +257,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
         public void placement(){
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -309,11 +314,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
                 bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
                 bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
-
-
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
 
+        }
+        public void terranEnemy(){
+            //    if( int dragCount >9 && enemyTerran){
+              //  }
+        }
+        public void protossEnemy(){
+              //  if( dragCount >9 && enemyTerran){
+              //  }
         }
         @Override
         public void keyPressed(int keyCode) {}
