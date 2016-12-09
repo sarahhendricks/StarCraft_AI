@@ -1,14 +1,17 @@
 package bot;
 
+
 import java.util.HashSet;
 
 import jnibwapi.*;
 import jnibwapi.types.TechType;
 import jnibwapi.types.TechType.TechTypes;
 import jnibwapi.types.UnitType;
+
+import java.util.Iterator;
+import java.util.Set;
+import jnibwapi.types.*;
 import jnibwapi.types.UnitType.UnitTypes;
-import jnibwapi.types.UpgradeType;
-import jnibwapi.types.UpgradeType.UpgradeTypes;
 
 /**
  * Example of a Java AI Client that does nothing.
@@ -21,7 +24,6 @@ import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
-
 
         //units that are used in multiple functions
         private Unit poolProbe;
@@ -51,6 +53,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position cyberPosition;
         Position citadelPosition;
         Position archivesPosition;
+        private Set<Player> enemies;
+        private RaceType enemy;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -70,6 +74,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
+
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
 
@@ -87,10 +92,52 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
                                 minerals = u;
                         }
+                }
 
+
+                //bwapi.setGameSpeed(0);
+
+                // Determine what race the enemy is.
+                enemies = bwapi.getEnemies();
+                for (Iterator<Player> it = enemies.iterator(); it.hasNext(); ) {
+                        RaceType race = it.next().getRace();
+                        if (race.equals(RaceType.RaceTypes.Protoss)) {
+                                System.out.println("enemy is protoss");
+                                enemy = RaceType.RaceTypes.Protoss;
+                        }
+                        else if (race.equals(RaceType.RaceTypes.Zerg)) {
+                                System.out.println("enemy is zerg");
+                                enemy = RaceType.RaceTypes.Zerg;
+
+                        }
+                        else {
+                                System.out.println("enemy is terran");
+                                enemy = RaceType.RaceTypes.Terran;
+                        }
                 }
         }
 
+        /*
+         * The game strategy for Terran enemies.
+         */
+        private void protossVsTerran() {
+        }
+
+        /*
+         * The game strategy for Zerg enemies.
+         */
+        private void protossVsZerg() {
+        }
+
+        /*
+         * The game strategy for Protoss enemies.
+         */
+        private void protossVsProtoss() {
+        }
+
+        /*
+         * This runs every game frame (multiple times a second!!)
+         */
         @Override
         public void matchFrame() {
                 int mineralCount = bwapi.getSelf().getMinerals();
@@ -119,6 +166,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //a function to collect Mineral
         public void collectMinerals(){
+
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
                                 // You can use referential equality for units, too
@@ -242,6 +290,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         gateway.train(UnitTypes.Protoss_Zealot);
                                 }
                         }
+                }
+
+                // branching off into our enemy-specific games
+                if (enemy == RaceType.RaceTypes.Protoss) {
+                        protossVsProtoss();
+                }
+                else if (enemy == RaceType.RaceTypes.Terran) {
+                        protossVsTerran();
+                }
+                else {
+                        protossVsZerg();
                 }
         }
         //function trying to find the radius of the pylon
