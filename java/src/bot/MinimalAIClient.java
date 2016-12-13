@@ -9,6 +9,7 @@ import jnibwapi.types.TechType.TechTypes;
 import jnibwapi.types.UnitType;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import jnibwapi.types.*;
 import jnibwapi.types.UnitType.UnitTypes;
@@ -21,6 +22,7 @@ import jnibwapi.JNIBWAPI;
 import jnibwapi.Position;
 import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
+import jnibwapi.Map;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
@@ -41,12 +43,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         //our base region variable
         Region baseRegion;
 
+        //our nearest choke point variable
+        ChokePoint myChokePoint;
+
         //booleans to check if a building exists
         boolean hasAssimilator = false;
         boolean hasGateway = false;
         boolean hasCyber = false;
         boolean hasCitadel = false;
         boolean hasArchives = false;
+        boolean hasForge = false;
 
         //positioning for buildings
         Position pylonPosition;
@@ -54,6 +60,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position cyberPosition;
         Position citadelPosition;
         Position archivesPosition;
+        Position forgePosition;
         private Set<Player> enemies;
         private RaceType enemy;
 
@@ -79,6 +86,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
                 gasProbe = null;
+                myChokePoint = null;
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -88,8 +96,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                         } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe == null) {
                                 gasProbe = u;
                         }
-                        // Print some position information, to understand how it works.
-                   //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
                 }
                 for (Unit u : bwapi.getNeutralUnits()) {
                         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -98,6 +104,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
 
+                for (ChokePoint chokePoint : bwapi.getMap().getChokePoints())
+                {
+                        if (chokePoint.getCenter().getX(Position.PosType.PIXEL) -
+                                nexus.getPosition().getX(Position.PosType.PIXEL) < 1000) {
+                                myChokePoint = chokePoint;
+                        }
+                }
 
                 //bwapi.setGameSpeed(0);
 
@@ -112,7 +125,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                         else if (race.equals(RaceType.RaceTypes.Zerg)) {
                                 System.out.println("enemy is zerg");
                                 enemy = RaceType.RaceTypes.Zerg;
-
                         }
                         else {
                                 System.out.println("enemy is terran");
@@ -131,27 +143,55 @@ public class MinimalAIClient implements BWAPIEventListener {
          * The game strategy for Zerg enemies.
          */
         private void protossVsZerg() {
-                /* build order
-                 * 8 - Pylon at Natural Expansion[1]
-                 * 10 - Forge[2]
-                 * 13 - two Photon Cannons[3]
-                 * 15 - Pylon[4]
-                 * 18 - Nexus
-                 * 18 - Gateway [5]
-                 * 20 - Assimilator [6]
-                 * 22 - Cybernetics Core
-                 * 25/26 - Assimilator[7]
-                 * @ 100% Cybernetics Core - Dragoon[8]
-                 * 100% Cybernetics Core - Stargate
-                 * @ 100 Gas - Citadel of Adun[9]
-                 * @ 100 Gas - Corsair
-                 * @ 100 Gas - +1 Ground Attack
-                 * @ 200 Gas - Templar Archives
-                 * 3 Gateways
-                 * @ 100% Templar Archives - 2 Archons[10]
-                 * @ 2 Archons - Zealot Speedupgrade
-                 * @ ~95% +1 Attack Upgrade - Army moves out
-                 */
+                int mineralCount = bwapi.getSelf().getMinerals();
+                int gasCount = bwapi.getSelf().getGas();
+                // supply used
+                int supplyUsed = bwapi.getSelf().getSupplyUsed();
+                //supply total
+                int supplyTotal = bwapi.getSelf().getSupplyTotal();
+
+                // build order
+                collectMinerals();
+                buildProbes(mineralCount);
+                 // 8 - Pylon at Natural Expansion[1]
+                 buildPylons(mineralCount, supplyUsed, supplyTotal);
+//                 * 10 - Forge[2]
+                buildForge(mineralCount);
+//                 * 13 - two Photon Cannons[3]
+//                 * 15 - Pylon[4]
+//                 * 18 - Nexus
+//                 * 18 - Gateway [5]
+//                 * 20 - Assimilator [6]
+//                 * 22 - Cybernetics Core
+//                 * 25/26 - Assimilator[7]
+//                 * @ 100% Cybernetics Core - Dragoon[8]
+//                 * 100% Cybernetics Core - Stargate
+//                 * @ 100 Gas - Citadel of Adun[9]
+//                 * @ 100 Gas - Corsair
+//                 * @ 100 Gas - +1 Ground Attack
+//                 * @ 200 Gas - Templar Archives
+//                 * 3 Gateways
+//                 * @ 100% Templar Archives - 2 Archons[10]
+//                 * @ 2 Archons - Zealot Speedupgrade
+//                 * @ ~95% +1 Attack Upgrade - Army moves out
+//                 */
+                placement();
+                //calling the functions in the matchframe
+
+
+//                buildAssimilator(mineralCount);
+//                collectMinerals();
+//                collectGas();
+//                buildProbes(mineralCount);
+//                buildPylons(mineralCount, supplyUsed, supplyTotal);
+//                placement();
+//                pylonRadius();
+//                buildGateway(mineralCount);
+//                buildCitadel(mineralCount, gasCount);
+//                buildCyber(mineralCount);
+//                buildTemplarArchive(mineralCount);
+//                buildDrag(mineralCount , gasCount);
+//                buildZealots(mineralCount);
         }
 
         /*
@@ -165,49 +205,29 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         @Override
         public void matchFrame() {
-                int mineralCount = bwapi.getSelf().getMinerals();
-                int gasCount = bwapi.getSelf().getGas();
-                // supply used
-                int supplyUsed = bwapi.getSelf().getSupplyUsed();
-                //supply total
-                int supplyTotal = bwapi.getSelf().getSupplyTotal();
-
-                //calling the functions in the matchframe
-                buildAssimilator(mineralCount);
-                collectMinerals();
-                collectGas();
-                //System.out.print(hasAssimilator);
-                buildProbes(mineralCount);
-                buildPylons(mineralCount, supplyUsed, supplyTotal);
-                placement();
-                pylonRadius();
-                buildGateway(mineralCount);
-               // buildCitadel(mineralCount, gasCount);
-                buildCyber(mineralCount);
-               // buildTemplarArchive(mineralCount);
-               // buildDrag(mineralCount , gasCount);
-                buildZealots(mineralCount);
-
+                // branching off into our enemy-specific games
+                if (enemy == RaceType.RaceTypes.Protoss) {
+                        protossVsProtoss();
+                }
+                else if (enemy == RaceType.RaceTypes.Terran) {
+                        protossVsTerran();
+                }
+                else {
+                        protossVsZerg();
+                }
         }
 
         //a function to collect Mineral
         public void collectMinerals(){
-
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
-                                // You can use referential equality for units, too
                                 if (unit.isIdle() && unit != poolProbe && unit != gasProbe) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
-                                                        //& !claimedMinerals.contains(minerals)
-                                                       // mineralPosition = minerals.getTilePosition();
-                                                        //bwapi.drawCircle(mineralPosition, 8, BWColor.Red, true, false);
-                                                     //   bwapi.drawBox();
                                                         double distance = unit.getDistance(minerals);
                                                         if (distance < 300) {
                                                                 unit.rightClick(minerals, false);
-                                                                //claimedMinerals.add(minerals);
                                                                 break;
                                                         }
                                                 }
@@ -242,10 +262,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void buildAssimilator(int mineralCount){
                 if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
-                                // Get the geyser that's in our base.
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                 if (vespene.getType() == UnitTypes.Resource_Vespene_Geyser && bwapi.getMap().getRegion(vespene.getPosition()) == baseRegion) {
-                                        // Use tile positions for building.
                                         geyserPosition = vespene.getTilePosition();
                                         break;
                                 }
@@ -261,26 +279,23 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (geyserPosition != null) {
                                 bwapi.drawCircle(geyserPosition, 5, BWColor.Yellow, true, false);
                         }
-                       bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                        bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
-
         }
 
         //function to build probes
         public void buildProbes(int mineralCount){
-                //want to limit the numbeer of probes being built
-                        if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
-                                nexus.train(UnitTypes.Protoss_Probe);
-                        }
+                if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
+                        nexus.train(UnitTypes.Protoss_Probe);
+                }
         }
 
         //function to build pylons
         public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
                 if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
-                                //build the pylon
-                                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
-                                }
+                        poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                         }
+                }
 
         //function to create a gateway
         public void buildGateway(int mineralCount){
@@ -295,19 +310,38 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if (hasGateway && mineralCount > 300){
                         poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
                         hasCyber = true;
-
                 }
         }
+
+        // function to build the citadel
         public void buildCitadel(int mineralCount, int gasCount){
                 if ( mineralCount > 350 && gasCount > 100 && poolProbe.isIdle()) {
                         poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
+                        hasCitadel = true;
                 }
         }
+
+        // function to build templar archive, needs citadel first
         public void buildTemplarArchive(int mineralCount) {
-                //need citadel made beforehand
                 if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
                         poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
                         hasArchives = true;
+                }
+        }
+
+        // function to build forge
+        public void buildForge(int mineralCount) {
+                if (mineralCount > 150 && poolProbe.isIdle()) {
+                        poolProbe.build(forgePosition, UnitTypes.Protoss_Forge);
+                        hasForge = true;
+                }
+        }
+
+        // function to build photon canons
+        public void buildPhotonCannons(int mineralCount) {
+                if (mineralCount > 150 && poolProbe.isIdle()) {
+                        // not sure if this works
+                        poolProbe.build(myChokePoint.getCenter(), UnitTypes.Protoss_Photon_Cannon);
                 }
         }
 
@@ -332,17 +366,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         gateway.train(UnitTypes.Protoss_Zealot);
                                 }
                         }
-                }
-
-                // branching off into our enemy-specific games
-                if (enemy == RaceType.RaceTypes.Protoss) {
-                        protossVsProtoss();
-                }
-                else if (enemy == RaceType.RaceTypes.Terran) {
-                        protossVsTerran();
-                }
-                else {
-                        protossVsZerg();
                 }
         }
         //function trying to find the radius of the pylon
@@ -409,12 +432,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 cyberPosition = new Position(xBuild-70, yBuild-70);
                 citadelPosition = new Position(xBuild+90, yBuild-50);
                 archivesPosition = new Position(xBuild-80, yBuild+40);
+                forgePosition = new Position(xBuild-50, yBuild-50);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
                 bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
                 bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
                 bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
+                bwapi.drawCircle(forgePosition, 8, BWColor.Red, true, false);
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
 
