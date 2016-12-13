@@ -104,14 +104,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
 
-                for (ChokePoint chokePoint : bwapi.getMap().getChokePoints())
-                {
-                        if (chokePoint.getCenter().getX(Position.PosType.PIXEL) -
-                                nexus.getPosition().getX(Position.PosType.PIXEL) < 1000) {
-                                myChokePoint = chokePoint;
-                        }
-                }
-
                 //bwapi.setGameSpeed(0);
 
                 // Determine what race the enemy is.
@@ -129,6 +121,18 @@ public class MinimalAIClient implements BWAPIEventListener {
                         else {
                                 System.out.println("enemy is terran");
                                 enemy = RaceType.RaceTypes.Terran;
+                        }
+                }
+
+                int closestChokePoint = 1000;
+                for (ChokePoint chokePoint : bwapi.getMap().getChokePoints())
+                {
+//                        System.out.println("Choke point: " + chokePoint.getCenter());
+//                        System.out.println("Nexus: " + nexus.getPosition());
+//                        System.out.println(nexus.getDistance(chokePoint.getCenter()));
+                        bwapi.drawCircle(chokePoint.getCenter(), 8, BWColor.Cyan, true, false);
+                        if (nexus.getDistance(chokePoint.getCenter()) < closestChokePoint) {
+                                myChokePoint = chokePoint;
                         }
                 }
         }
@@ -158,6 +162,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                 * 10 - Forge[2]
                 buildForge(mineralCount);
 //                 * 13 - two Photon Cannons[3]
+                buildPhotonCannons(mineralCount);
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
 //                 * 18 - Gateway [5]
@@ -341,8 +346,11 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void buildPhotonCannons(int mineralCount) {
                 if (mineralCount > 150 && poolProbe.isIdle()) {
                         // not sure if this works
-                        poolProbe.build(myChokePoint.getCenter(), UnitTypes.Protoss_Photon_Cannon);
+                        poolProbe.move(myChokePoint.getCenter(), false);
+//                        System.out.println(myChokePoint.getCenter());
+                        poolProbe.build(myChokePoint.getFirstSide(), UnitTypes.Protoss_Photon_Cannon);
                 }
+                bwapi.drawCircle(myChokePoint.getCenter(), 8, BWColor.Cyan, true, false);
         }
 
         //function to create dragoons
@@ -383,7 +391,6 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public void placement(){
-
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
               //  nexusPosition = nexus.getTilePosition();
                 nexusPosition = nexus.getPosition();
@@ -432,7 +439,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 cyberPosition = new Position(xBuild-70, yBuild-70);
                 citadelPosition = new Position(xBuild+90, yBuild-50);
                 archivesPosition = new Position(xBuild-80, yBuild+40);
-                forgePosition = new Position(xBuild-50, yBuild-50);
+                forgePosition = new Position(xBuild-120, yBuild-50);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
