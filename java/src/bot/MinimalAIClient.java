@@ -338,10 +338,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        public void placement(){
+        public void placement() {
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
-              //  nexusPosition = nexus.getTilePosition();
+                //  nexusPosition = nexus.getTilePosition();
                 nexusPosition = nexus.getPosition();
                 //System.out.print("This is  getTilePosition() " + nexusPosition);
                 //System.out.print("This is  getPosition() " +nexusPosition);
@@ -350,44 +350,42 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int xBuild = nexusPosition.getX(Position.PosType.PIXEL);
                 int yBuild = nexusPosition.getY(Position.PosType.PIXEL);
                 //System.out.print("X-BUILD " + xBuild);
-               // System.out.print("Y-BUILD " + yBuild);
+                // System.out.print("Y-BUILD " + yBuild);
 
-              //  System.out.print(newBuildingPosition);
+                //  System.out.print(newBuildingPosition);
                 mineralPosition = minerals.getPosition();
                 //getting the X Y coordinate of the mineral positions
-                int xMin =  mineralPosition.getX(Position.PosType.PIXEL);
-                int yMin= mineralPosition.getY(Position.PosType.PIXEL);
+                int xMin = mineralPosition.getX(Position.PosType.PIXEL);
+                int yMin = mineralPosition.getY(Position.PosType.PIXEL);
 
-               // System.out.print(xMin);
-               // System.out.print(yMin);
+                // System.out.print(xMin);
+                // System.out.print(yMin);
                 int pixelPosiCounter = 50;
                 int pixelNegaCounter = 50;
-                if (xBuild > xMin){
+                if (xBuild > xMin) {
                         //nexus right of minerals so build to the right
                         //Add X value
                         xBuild = xBuild + 100 + pixelPosiCounter;
 
-                }
-                else{
+                } else {
                         //nexus left of minerals build to left
                         //Subtract X value
                         xBuild = xBuild - 200;
                 }
-                if (yBuild > yMin){
+                if (yBuild > yMin) {
                         //nexus top of minerals so build to the top of nexus
                         yBuild = yBuild + 100 + pixelPosiCounter;
-                }
-                else{
+                } else {
                         //nexus bottom of minerals so build to the bottom of nexus
                         //subtract Y value
                         yBuild = yBuild - 200;
                 }
                 //euclidean distance to not build in this area
                 pylonPosition = new Position(xBuild, yBuild);
-                gatewayPosition = new Position(xBuild+70, yBuild+70);
-                cyberPosition = new Position(xBuild-70, yBuild-70);
-                citadelPosition = new Position(xBuild+90, yBuild-50);
-                archivesPosition = new Position(xBuild-80, yBuild+40);
+                gatewayPosition = new Position(xBuild + 70, yBuild + 70);
+                cyberPosition = new Position(xBuild - 70, yBuild - 70);
+                citadelPosition = new Position(xBuild + 90, yBuild - 50);
+                archivesPosition = new Position(xBuild - 80, yBuild + 40);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
@@ -397,6 +395,56 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
 
+                int checkPointX = pylonPosition.getX(Position.PosType.PIXEL);
+                int checkPointY = pylonPosition.getY(Position.PosType.PIXEL);
+                Position checkPosition1;
+                Position checkPosition2;
+                Position checkPosition3;
+                Position checkPosition4;
+                Position checkPosition5;
+                Position checkPosition6;
+                Position checkPosition7;
+                Position checkPosition8;
+
+
+                int max = 1000;
+                for (int x_offset = 0; x_offset < max; x_offset += 50) {
+                        for (int y_offset = 0; y_offset <= x_offset; y_offset += 50) {
+                                checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
+                                checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
+                                checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
+                                checkPosition4 = new Position(checkPointX - x_offset, checkPointY - y_offset);
+                                checkPosition5 = new Position(checkPointX, checkPointY + y_offset);
+                                checkPosition6 = new Position(checkPointY, checkPointY - y_offset);
+                                checkPosition7 = new Position(checkPointX + x_offset, checkPointY);
+                                checkPosition8 = new Position(checkPointX - x_offset, checkPointY);
+
+                                if (bwapi.isBuildable(checkPosition1, true)) {
+                                        bwapi.drawCircle(checkPosition1, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition2, true)) {
+                                        bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition3, true)) {
+                                        bwapi.drawCircle(checkPosition3, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition4, true)) {
+                                        bwapi.drawCircle(checkPosition4, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition5, true)) {
+                                        bwapi.drawCircle(checkPosition5, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition6, true)) {
+                                        bwapi.drawCircle(checkPosition6, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition7, true)) {
+                                        bwapi.drawCircle(checkPosition7, 3, BWColor.Yellow, true, false);
+                                }
+                                if (bwapi.isBuildable(checkPosition8, true)) {
+                                        bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
+                                }
+                        }
+                }
         }
         public void terranEnemy(){
             //    if( int dragCount >9 && enemyTerran){
