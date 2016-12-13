@@ -27,6 +27,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //units that are used in multiple functions
         private Unit poolProbe;
+        private Unit gasProbe;
         private Unit nexus;
         private Unit geyser;
         private Unit minerals;
@@ -77,12 +78,15 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
+                gasProbe = null;
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
                                 nexus = u;
                         } else if (u.getType() == UnitTypes.Protoss_Probe && poolProbe == null) {
                                 poolProbe = u;
+                        } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe == null) {
+                                gasProbe = u;
                         }
                         // Print some position information, to understand how it works.
                    //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
@@ -171,6 +175,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //calling the functions in the matchframe
                 buildAssimilator(mineralCount);
                 collectMinerals();
+                collectGas();
                 //System.out.print(hasAssimilator);
                 buildProbes(mineralCount);
                 buildPylons(mineralCount, supplyUsed, supplyTotal);
@@ -191,7 +196,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
                                 // You can use referential equality for units, too
-                                if (unit.isIdle() && unit != poolProbe) {
+                                if (unit.isIdle() && unit != poolProbe && unit != gasProbe) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
@@ -214,7 +219,23 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         // a Function to collect Gas
         public void collectGas(){
+                if (hasAssimilator) {
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit == gasProbe) {
+                                        for (Unit refine : bwapi.getUnits(bwapi.getSelf())) {
+                                                if (refine.getType().isRefinery()) {
+                                                        double distance = unit.getDistance(refine);
+                                                        if (distance < 300) {
+                                                                unit.gather(refine, true);
+                                                                bwapi.drawCircle(unit.getPosition(), 8, BWColor.Yellow, true, false);
+                                                                break;
+                                                        }
+                                                }
+                                        }
 
+                                }
+                        }
+                }
         }
 
         //a function to build the assimilator
@@ -232,7 +253,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (poolProbe.isIdle()) {
                                 poolProbe.build(geyserPosition, UnitTypes.Protoss_Assimilator);
                                 // The below is not good enough logic to ensure a building is actually being constructed.
-                                // you should make sure you have an assmilitor in construction before changing hasAssimilator.
+                                // you should make sure you have an assmilitor in construction before changing hasAssimilator
                                 hasAssimilator = true;
                         }
                 }
