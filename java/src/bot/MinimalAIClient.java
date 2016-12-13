@@ -409,36 +409,36 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 int max = 1000;
                 for (int x_offset = 0; x_offset < max; x_offset += 50) {
-                        for (int y_offset = 0; y_offset <= x_offset; y_offset += 50) {
+                        for (int y_offset = 0; y_offset <= (max); y_offset += 50) {
                                 checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
                                 checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
                                 checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
                                 checkPosition4 = new Position(checkPointX - x_offset, checkPointY - y_offset);
                                 checkPosition5 = new Position(checkPointX, checkPointY + y_offset);
-                                checkPosition6 = new Position(checkPointY, checkPointY - y_offset);
+                                checkPosition6 = new Position(checkPointX, checkPointY - y_offset);
                                 checkPosition7 = new Position(checkPointX + x_offset, checkPointY);
                                 checkPosition8 = new Position(checkPointX - x_offset, checkPointY);
 
                                 if (bwapi.isBuildable(checkPosition1, true)) {
-                                        bwapi.drawCircle(checkPosition1, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition1, 3, BWColor.Red, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition2, true)) {
                                         bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition3, true)) {
-                                        bwapi.drawCircle(checkPosition3, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition3, 3, BWColor.Orange, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition4, true)) {
-                                        bwapi.drawCircle(checkPosition4, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition4, 3, BWColor.Red, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition5, true)) {
-                                        bwapi.drawCircle(checkPosition5, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition5, 3, BWColor.Blue, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition6, true)) {
-                                        bwapi.drawCircle(checkPosition6, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition6, 3, BWColor.Orange, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition7, true)) {
-                                        bwapi.drawCircle(checkPosition7, 3, BWColor.Yellow, true, false);
+                                        bwapi.drawCircle(checkPosition7, 3, BWColor.Green, true, false);
                                 }
                                 if (bwapi.isBuildable(checkPosition8, true)) {
                                         bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
