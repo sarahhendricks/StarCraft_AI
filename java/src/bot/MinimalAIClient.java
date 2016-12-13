@@ -408,8 +408,9 @@ public class MinimalAIClient implements BWAPIEventListener {
 
 
                 int max = 1000;
-                for (int x_offset = 0; x_offset < max; x_offset += 50) {
-                        for (int y_offset = 0; y_offset <= (max); y_offset += 50) {
+                int offset = 50;
+                for (int x_offset = 0; x_offset < max; x_offset += offset) {
+                        for (int y_offset = 0; y_offset <= (max); y_offset += offset) {
                                 checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
                                 checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
                                 checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
@@ -419,32 +420,86 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 checkPosition7 = new Position(checkPointX + x_offset, checkPointY);
                                 checkPosition8 = new Position(checkPointX - x_offset, checkPointY);
 
+                                //for each spot check the radius around it and then draw a circle
                                 if (bwapi.isBuildable(checkPosition1, true)) {
-                                        bwapi.drawCircle(checkPosition1, 3, BWColor.Red, true, false);
+                                        if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition1, 3, BWColor.Red, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition2, true)) {
-                                        bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
+                                        if (checkSpot(checkPosition2.getX(Position.PosType.PIXEL), checkPosition2.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition3, true)) {
-                                        bwapi.drawCircle(checkPosition3, 3, BWColor.Orange, true, false);
+                                        if (checkSpot(checkPosition3.getX(Position.PosType.PIXEL), checkPosition3.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition3, 3, BWColor.Orange, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition4, true)) {
-                                        bwapi.drawCircle(checkPosition4, 3, BWColor.Red, true, false);
+                                        if (checkSpot(checkPosition4.getX(Position.PosType.PIXEL), checkPosition4.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition4, 3, BWColor.Red, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition5, true)) {
-                                        bwapi.drawCircle(checkPosition5, 3, BWColor.Blue, true, false);
+                                        if (checkSpot(checkPosition5.getX(Position.PosType.PIXEL), checkPosition5.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition5, 3, BWColor.Blue, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition6, true)) {
-                                        bwapi.drawCircle(checkPosition6, 3, BWColor.Orange, true, false);
+                                        if (checkSpot(checkPosition6.getX(Position.PosType.PIXEL), checkPosition6.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition6, 3, BWColor.Orange, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition7, true)) {
-                                        bwapi.drawCircle(checkPosition7, 3, BWColor.Green, true, false);
+                                        if (checkSpot(checkPosition7.getX(Position.PosType.PIXEL), checkPosition7.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition7, 3, BWColor.Green, true, false);
+                                        }
                                 }
                                 if (bwapi.isBuildable(checkPosition8, true)) {
-                                        bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
+                                        if (checkSpot(checkPosition8.getX(Position.PosType.PIXEL), checkPosition8.getY(Position.PosType.PIXEL)) == true) {
+                                                bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
+                                        }
                                 }
                         }
                 }
+        }
+        public boolean checkSpot(int checkX, int checkY){
+                Position checkPosition1;
+                Position checkPosition2;
+                Position checkPosition3;
+                Position checkPosition4;
+                Position checkPosition5;
+                Position checkPosition6;
+                Position checkPosition7;
+                Position checkPosition8;
+
+                //max is the radius around things
+                int max = 30;
+                int offset = 1;
+                for (int x_offset = 0; x_offset < max; x_offset += offset) {
+                        for (int y_offset = 0; y_offset <= (max); y_offset += offset) {
+                                checkPosition1 = new Position(checkX + x_offset, checkY + y_offset);
+                                checkPosition2 = new Position(checkX + x_offset, checkY - y_offset);
+                                checkPosition3 = new Position(checkX - x_offset, checkY + y_offset);
+                                checkPosition4 = new Position(checkX - x_offset, checkY - y_offset);
+                                checkPosition5 = new Position(checkX, checkY + y_offset);
+                                checkPosition6 = new Position(checkX, checkY - y_offset);
+                                checkPosition7 = new Position(checkX + x_offset, checkY);
+                                checkPosition8 = new Position(checkX - x_offset, checkY);
+
+                                //If it is true for all then continue
+                                if (bwapi.isBuildable(checkPosition1, true)&&bwapi.isBuildable(checkPosition2, true)&&bwapi.isBuildable(checkPosition3, true)&&bwapi.isBuildable(checkPosition4, true)&&bwapi.isBuildable(checkPosition5, true)&& bwapi.isBuildable(checkPosition6, true) && bwapi.isBuildable(checkPosition7, true) && bwapi.isBuildable(checkPosition8, true)) {
+
+                                }
+                                //else break and say it is not buildable
+                                else{
+                                        return false;
+                                }
+                        }
+                }
+                //return true since nothing returned false
+                return true;
         }
         public void terranEnemy(){
             //    if( int dragCount >9 && enemyTerran){
