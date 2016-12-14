@@ -64,6 +64,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         private int supplyUsed;
         //supply total
         private int supplyTotal;
+        //probe count
+        private int probeCount;
 
         public static void main(String[] args) {
                 new MinimalAIClient();
@@ -89,10 +91,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                 poolProbe = null;
                 gasProbe = null;
 
-                mineralCount = bwapi.getSelf().getMinerals();
-                gasCount = bwapi.getSelf().getGas();
-                supplyUsed = bwapi.getSelf().getSupplyUsed();
-                supplyTotal = bwapi.getSelf().getSupplyTotal();
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -133,6 +131,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 enemy = RaceType.RaceTypes.Terran;
                         }
                 }
+
         }
 
         /*
@@ -141,64 +140,69 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         private void protossVsPT(){
                 // Build Probes
-                if(supplyUsed < 8 && mineralCount >=50){
+                if((supplyUsed/2) < 8 && mineralCount >=50){
                         buildProbes();
                 }
-                // Collect minerals
-                collectMinerals();
+//              // Collect minerals
+//                collectMinerals();
                 // Build a pylon at 8/9 supply && 100 minerals
-                if(supplyUsed == 8 && mineralCount >= 100){
+                if((supplyUsed/2) == 8 && mineralCount >= 100){
                         buildPylons();
                 }
                 // Keep building probes
-                if(supplyUsed > 8 && supplyUsed < 12 && mineralCount >= 50){
+                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50){
                         buildProbes();
                 }
                 // Gateway at 12/17 supply 150 minerals
-                if(supplyUsed == 12 && mineralCount >= 150){
+                if((supplyUsed/2) == 12 && mineralCount >= 150){
                         buildGateway();
                 }
+                //buildZealots();
                 // Assimilator at 13/17 supply and 100 minerals
-                if(supplyUsed == 13 && mineralCount >= 100){
-                        buildAssimilator();
+                if((supplyUsed/2) >= 13 && mineralCount >= 100 && !hasAssimilator){
+                        //System.out.println("assimilator");
+                        buildAssimilator(mineralCount);
                 }
-                // Build a few more probes
-                if(supplyUsed == 14 && mineralCount >= 50){
+                // Build a probe
+                if((supplyUsed/2) <= 14 && mineralCount >= 50 && hasAssimilator && probeCount <1){
+                        //only want three
                         buildProbes();
+                        System.out.println(probeCount);
+                        probeCount += 1;
                 }
                 // collect gas
                 collectGas();
                 // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if(supplyUsed == 15 && hasCyber && mineralCount >= 125 && gasCount >= 50){
+                if((supplyUsed/2) == 15 && hasCyber && mineralCount >= 125 && gasCount >= 50){
                         buildDrag();
                 }
-                // Build Cyber Core at 15/17 supply && 200 minerals
-                if(supplyUsed == 15 && hasGateway && !hasCyber && mineralCount >= 300){
+//                // Build Cyber Core at 15/17 supply && 200 minerals
+                if((supplyUsed/2) == 15 && hasGateway && !hasCyber && mineralCount >= 300){
                         buildCyber();
                 }
-                // Build second Pylon at 16/17 supply
-                if(supplyUsed == 16 && mineralCount >= 100){
-                        buildPylons();
-                }
+//                // Build second Pylon at 16/17 supply
+//                if(supplyUsed == 16 && mineralCount >= 100){
+//                        buildPylons();
+//                }
         }
         private void protossVsTerran() {
-                // Build second Gateway close to first gateway 17/25
-                if(supplyUsed == 17 && mineralCount >= 150){
-                        buildGateway();
-                }
-                // Build Dragoon at 18/25
-                if(supplyUsed > 17 && supplyUsed < 20 && hasCyber && mineralCount >= 125 && gasCount >= 50){
-                        buildDrag();
-                }
-                // Upgrade Dragoon at 20/25 at the Assimilator
-                // Build third pylon away from the first two at 21/25
-                if(supplyUsed == 21 && mineralCount >= 100){
-                        buildPylons();
-                }
-                // Build a Citadel at 26/33
-                if(supplyUsed == 26 && mineralCount >= 150 && gasCount >- 100){
-                        buildCitadel();
-                }
+//                // Build second Gateway close to first gateway 17/25
+//                if(supplyUsed == 17 && mineralCount >= 150){
+//                        buildGateway();
+//                }
+//                // Build Dragoon at 18/25
+//                if(supplyUsed > 17 && supplyUsed < 20 && hasCyber && mineralCount >= 125 && gasCount >= 50){
+//                        buildDrag();
+//                }
+//                // Upgrade Dragoon at 20/25 at the Assimilator
+//                // Build third pylon away from the first two at 21/25
+//                if(supplyUsed == 21 && mineralCount >= 100){
+//                        buildPylons();
+//                }
+//                // Build a Citadel at 26/33
+//                if(supplyUsed == 26 && mineralCount >= 150 && gasCount >- 100){
+//                        buildCitadel();
+//                }
         }
 
         /*
@@ -218,31 +222,31 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         @Override
         public void matchFrame() {
+                placement();
+                mineralCount = bwapi.getSelf().getMinerals();
+                gasCount = bwapi.getSelf().getGas();
+                supplyUsed = bwapi.getSelf().getSupplyUsed();
+                supplyTotal = bwapi.getSelf().getSupplyTotal();
 
                 //calling the functions in the matchframe
-                buildAssimilator();
+                //buildAssimilator();
                 collectMinerals();
-                collectGas();
+                //collectGas();
                 //System.out.print(hasAssimilator);
-                buildProbes();
-                buildPylons();
-                placement();
-                pylonRadius();
-                buildGateway();
+//                buildProbes();
+//                buildPylons();
+//                placement();
+//                pylonRadius();
+//                buildGateway();
                // buildCitadel(), gasCount);
-                buildCyber();
+                //buildCyber();
                // buildTemplarArchive();
                // buildDrag() , gasCount);
-                buildZealots();
+                //buildZealots();
 
                 //branching off into our enemy-specific games
-                if (enemy == RaceType.RaceTypes.Protoss) {
+                if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
                         protossVsPT();
-                        protossVsProtoss();
-                }
-                else if (enemy == RaceType.RaceTypes.Terran) {
-                        protossVsPT();
-                        protossVsTerran();
                 }
                 else {
                         protossVsZerg();
@@ -260,10 +264,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
-                                                        //& !claimedMinerals.contains(minerals)
-                                                       // mineralPosition = minerals.getTilePosition();
-                                                        //bwapi.drawCircle(mineralPosition, 8, BWColor.Red, true, false);
-                                                     //   bwapi.drawBox();
                                                         double distance = unit.getDistance(minerals);
                                                         if (distance < 300) {
                                                                 unit.rightClick(minerals, false);
@@ -299,8 +299,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //a function to build the assimilator
-        public void buildAssimilator(){
-                if (poolProbe != null && !hasAssimilator) {
+        public void buildAssimilator(int mineralCount){
+                if (poolProbe != null) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
                                 // Get the geyser that's in our base.
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -321,7 +321,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         if (geyserPosition != null) {
                                 bwapi.drawCircle(geyserPosition, 5, BWColor.Yellow, true, false);
                         }
-                       bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
+                        bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
 
         }
@@ -329,6 +329,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         //function to build probes
         public void buildProbes(){
                 //want to limit the numbeer of probes being built
+                //System.out.println("Enough minerals");
                 nexus.train(UnitTypes.Protoss_Probe);
         }
 
@@ -473,60 +474,60 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 int max = 1000;
                 int offset = 50;
-                for (int x_offset = 0; x_offset < max; x_offset += offset) {
-                        for (int y_offset = 0; y_offset <= (max); y_offset += offset) {
-                                checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
-                                checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
-                                checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
-                                checkPosition4 = new Position(checkPointX - x_offset, checkPointY - y_offset);
-                                checkPosition5 = new Position(checkPointX, checkPointY + y_offset);
-                                checkPosition6 = new Position(checkPointX, checkPointY - y_offset);
-                                checkPosition7 = new Position(checkPointX + x_offset, checkPointY);
-                                checkPosition8 = new Position(checkPointX - x_offset, checkPointY);
-
-                                //for each spot check the radius around it and then draw a circle
-                                if (bwapi.isBuildable(checkPosition1, true)) {
-                                        if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition1, 3, BWColor.Red, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition2, true)) {
-                                        if (checkSpot(checkPosition2.getX(Position.PosType.PIXEL), checkPosition2.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition3, true)) {
-                                        if (checkSpot(checkPosition3.getX(Position.PosType.PIXEL), checkPosition3.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition3, 3, BWColor.Orange, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition4, true)) {
-                                        if (checkSpot(checkPosition4.getX(Position.PosType.PIXEL), checkPosition4.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition4, 3, BWColor.Red, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition5, true)) {
-                                        if (checkSpot(checkPosition5.getX(Position.PosType.PIXEL), checkPosition5.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition5, 3, BWColor.Blue, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition6, true)) {
-                                        if (checkSpot(checkPosition6.getX(Position.PosType.PIXEL), checkPosition6.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition6, 3, BWColor.Orange, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition7, true)) {
-                                        if (checkSpot(checkPosition7.getX(Position.PosType.PIXEL), checkPosition7.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition7, 3, BWColor.Green, true, false);
-                                        }
-                                }
-                                if (bwapi.isBuildable(checkPosition8, true)) {
-                                        if (checkSpot(checkPosition8.getX(Position.PosType.PIXEL), checkPosition8.getY(Position.PosType.PIXEL)) == true) {
-                                                bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
-                                        }
-                                }
-                        }
-                }
+//                for (int x_offset = 0; x_offset < max; x_offset += offset) {
+//                        for (int y_offset = 0; y_offset <= (max); y_offset += offset) {
+//                                checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
+//                                checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
+//                                checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
+//                                checkPosition4 = new Position(checkPointX - x_offset, checkPointY - y_offset);
+//                                checkPosition5 = new Position(checkPointX, checkPointY + y_offset);
+//                                checkPosition6 = new Position(checkPointX, checkPointY - y_offset);
+//                                checkPosition7 = new Position(checkPointX + x_offset, checkPointY);
+//                                checkPosition8 = new Position(checkPointX - x_offset, checkPointY);
+//
+//                                //for each spot check the radius around it and then draw a circle
+//                                if (bwapi.isBuildable(checkPosition1, true)) {
+//                                        if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition1, 3, BWColor.Red, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition2, true)) {
+//                                        if (checkSpot(checkPosition2.getX(Position.PosType.PIXEL), checkPosition2.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition2, 3, BWColor.Yellow, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition3, true)) {
+//                                        if (checkSpot(checkPosition3.getX(Position.PosType.PIXEL), checkPosition3.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition3, 3, BWColor.Orange, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition4, true)) {
+//                                        if (checkSpot(checkPosition4.getX(Position.PosType.PIXEL), checkPosition4.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition4, 3, BWColor.Red, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition5, true)) {
+//                                        if (checkSpot(checkPosition5.getX(Position.PosType.PIXEL), checkPosition5.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition5, 3, BWColor.Blue, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition6, true)) {
+//                                        if (checkSpot(checkPosition6.getX(Position.PosType.PIXEL), checkPosition6.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition6, 3, BWColor.Orange, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition7, true)) {
+//                                        if (checkSpot(checkPosition7.getX(Position.PosType.PIXEL), checkPosition7.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition7, 3, BWColor.Green, true, false);
+//                                        }
+//                                }
+//                                if (bwapi.isBuildable(checkPosition8, true)) {
+//                                        if (checkSpot(checkPosition8.getX(Position.PosType.PIXEL), checkPosition8.getY(Position.PosType.PIXEL)) == true) {
+//                                                bwapi.drawCircle(checkPosition8, 3, BWColor.Yellow, true, false);
+//                                        }
+//                                }
+//                        }
+//                }
         }
         public boolean checkSpot(int checkX, int checkY){
                 Position checkPosition1;
