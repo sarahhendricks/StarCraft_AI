@@ -184,12 +184,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 switch (buildOrderNumber) {
                         // 8 - Pylon at Natural Expansion[1]
                         case 7:
-                                for (Unit u : bwapi.getEnemyUnits()) {
-                                        gasProbe.move(u.getPosition(), false);
-                                }
                                 if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPosition) &&
                                         mineralCount > 100) {
-                                        buildPylons(mineralCount);
+                                        buildPylons(mineralCount, pylonPosition);
                                 }
                                 if (buildingExists(UnitTypes.Protoss_Pylon, pylonPosition)) {
                                         buildProbes(mineralCount);
@@ -216,7 +213,31 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 break;
                         // 13 - two Photon Cannons[3]
                         case 12:
-                                buildPhotonCannons(mineralCount);
+                                Position chokePoint = myChokePoint.getCenter();
+                                int xBuild = chokePoint.getX(Position.PosType.PIXEL);
+                                int yBuild = chokePoint.getY(Position.PosType.PIXEL);
+                                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
+                                Position change = new Position(xBuild + 150, yBuild + 70);
+                                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
+                                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
+
+                                if (poolProbe.isIdle() && poolProbe.getPosition().getBX() !=
+                                        pylonPoint.getBX()) {
+                                        System.out.println("pool probe idle");
+                                        for (Unit u : bwapi.getMyUnits()) {
+                                                if (u.getType() == UnitTypes.Protoss_Pylon)
+                                                        System.out.println(u.getID()+", "+u.getType());
+                                        }
+                                        poolProbe.move(pylonPoint, false);
+                                }
+                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
+                                        System.out.println("no pylon exists yet.");
+                                        buildPylons(mineralCount, pylonPoint);
+                                }
+                                if (buildingExists(UnitTypes.Protoss_Pylon, pylonPoint) &&
+                                        !buildingExists(UnitTypes.Protoss_Photon_Cannon, change)) {
+                                        buildPhotonCannons(mineralCount, change);
+                                }
                                 break;
                 }
 //                 * 15 - Pylon[4]
@@ -258,12 +279,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         private boolean buildingExists(UnitType buildingType, Position buildingPosition) {
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == buildingType){
-                                int pos1 = u.getPosition().getX(Position.PosType.BUILD);
-                                int pos2 = buildingPosition.getX(Position.PosType.BUILD);
-                                if (u.getPosition().getX(Position.PosType.BUILD) -
-                                        buildingPosition.getX(Position.PosType.BUILD) <= 3 ||
-                                        u.getPosition().getX(Position.PosType.BUILD) -
-                                                buildingPosition.getX(Position.PosType.BUILD) >= 3) {
+                                int pos1 = u.getPosition().getBX();
+                                int pos2 = buildingPosition.getBX();
+                                if (Math.abs(pos1 - pos2) <= 3) {
                                         return true;
                                 }
                         }
@@ -369,7 +387,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount){
+        public void buildPylons(int mineralCount, Position pylonPosition){
                 if ( mineralCount >100){
                         poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                 }
@@ -416,25 +434,10 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         // function to build photon canons
-        public void buildPhotonCannons(int mineralCount) {
-                // need to figure out how to build on the up-side of the choke point
-                Position chokePoint = myChokePoint.getCenter();
-                int xBuild = chokePoint.getX(Position.PosType.PIXEL);
-                int yBuild = chokePoint.getY(Position.PosType.PIXEL);
-                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
-                pylonRadius(pylonPoint);
-                Position change = new Position(xBuild + 150, yBuild + 70);
-                if (mineralCount > 150) {
-                        if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
-                                poolProbe.build(pylonPoint, UnitTypes.Protoss_Pylon);
-                        }
-                        if (buildingExists(UnitTypes.Protoss_Pylon, pylonPoint) &&
-                                !buildingExists(UnitTypes.Protoss_Photon_Cannon, change)) {
-                                poolProbe.build(change, UnitTypes.Protoss_Photon_Cannon);
-                        }
+        public void buildPhotonCannons(int mineralCount, Position position) {
+                if (mineralCount > 150 && poolProbe.isIdle()) {
+                        poolProbe.build(position, UnitTypes.Protoss_Photon_Cannon);
                 }
-                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
-                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
         }
 
         //function to create dragoons
