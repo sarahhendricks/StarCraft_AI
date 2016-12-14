@@ -47,6 +47,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         ChokePoint myChokePoint;
 
         //booleans to check if a building exists
+        boolean pylonBuilt = false;
         boolean hasAssimilator = false;
         boolean hasGateway = false;
         boolean hasCyber = false;
@@ -154,15 +155,36 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //supply total
                 int supplyTotal = bwapi.getSelf().getSupplyTotal();
 
+                int buildOrderNumber = supplyUsed / 2;
+
                 // build order
                 collectMinerals();
-                buildProbes(mineralCount);
-                 // 8 - Pylon at Natural Expansion[1]
-                 buildPylons(mineralCount, supplyUsed, supplyTotal);
-//                 * 10 - Forge[2]
-//                buildForge(mineralCount);
-//                 * 13 - two Photon Cannons[3]
-                buildPhotonCannons(mineralCount);
+                if (buildOrderNumber < 8) {
+                        buildProbes(mineralCount);
+                }
+
+                switch (buildOrderNumber) {
+                        // 8 - Pylon at Natural Expansion[1]
+                        case 8:
+                                if (pylonBuilt == false) {
+                                        buildPylons(mineralCount, supplyUsed, supplyTotal);
+                                        pylonBuilt = true;
+                                }
+                                if (pylonBuilt) {
+                                        buildProbes(mineralCount);
+                                }
+                                break;
+                        case 9:
+                                buildProbes(mineralCount);
+                                break;
+                        // 10 - Forge[2]
+                        case 10:
+                                buildForge(mineralCount);
+                                break;
+                        // 13 - two Photon Cannons[3]
+                        case 13:
+                                buildPhotonCannons(mineralCount);
+                }
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
 //                 * 18 - Gateway [5]
@@ -290,17 +312,18 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to build probes
         public void buildProbes(int mineralCount){
-                if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
+                if ( mineralCount >= 50 && !nexus.isTraining() &&
+                        bwapi.getSelf().getSupplyUsed()/2 <= bwapi.getSelf().getSupplyTotal()/2) {
                         nexus.train(UnitTypes.Protoss_Probe);
                 }
         }
 
         //function to build pylons
         public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
-                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
+                if ( mineralCount >100){
                         poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
-                        }
                 }
+        }
 
         //function to create a gateway
         public void buildGateway(int mineralCount){
@@ -346,6 +369,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void buildPhotonCannons(int mineralCount) {
                 // need to figure out how to build on the up-side of the choke point
                 Position chokePoint = myChokePoint.getCenter();
+                if (chokePoint.getWY() < nexus.getPosition().getWY()) {
+                        System.out.println("");
+                }
                 int xBuild = chokePoint.getX(Position.PosType.PIXEL);
                 int yBuild = chokePoint.getY(Position.PosType.PIXEL);
                 Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
