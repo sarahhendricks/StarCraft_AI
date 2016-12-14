@@ -57,6 +57,14 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Set<Player> enemies;
         private RaceType enemy;
 
+        //Different counts we need
+        private int mineralCount;
+        private int gasCount;
+        // supply used
+        private int supplyUsed;
+        //supply total
+        private int supplyTotal;
+
         public static void main(String[] args) {
                 new MinimalAIClient();
         }
@@ -73,12 +81,18 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void matchStart() {
                 System.out.println("Game Started");
 
+                //initializing all the variables
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
 
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
                 gasProbe = null;
+
+                mineralCount = bwapi.getSelf().getMinerals();
+                gasCount = bwapi.getSelf().getGas();
+                supplyUsed = bwapi.getSelf().getSupplyUsed();
+                supplyTotal = bwapi.getSelf().getSupplyTotal();
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -123,8 +137,68 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         /*
          * The game strategy for Terran enemies.
+         *
          */
+        private void protossVsPT(){
+                // Build Probes
+                if(supplyUsed < 8 && mineralCount >=50){
+                        buildProbes();
+                }
+                // Collect minerals
+                collectMinerals();
+                // Build a pylon at 8/9 supply && 100 minerals
+                if(supplyUsed == 8 && mineralCount >= 100){
+                        buildPylons();
+                }
+                // Keep building probes
+                if(supplyUsed > 8 && supplyUsed < 12 && mineralCount >= 50){
+                        buildProbes();
+                }
+                // Gateway at 12/17 supply 150 minerals
+                if(supplyUsed == 12 && mineralCount >= 150){
+                        buildGateway();
+                }
+                // Assimilator at 13/17 supply and 100 minerals
+                if(supplyUsed == 13 && mineralCount >= 100){
+                        buildAssimilator();
+                }
+                // Build a few more probes
+                if(supplyUsed == 14 && mineralCount >= 50){
+                        buildProbes();
+                }
+                // collect gas
+                collectGas();
+                // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
+                if(supplyUsed == 15 && hasCyber && mineralCount >= 125 && gasCount >= 50){
+                        buildDrag();
+                }
+                // Build Cyber Core at 15/17 supply && 200 minerals
+                if(supplyUsed == 15 && hasGateway && !hasCyber && mineralCount >= 300){
+                        buildCyber();
+                }
+                // Build second Pylon at 16/17 supply
+                if(supplyUsed == 16 && mineralCount >= 100){
+                        buildPylons();
+                }
+        }
         private void protossVsTerran() {
+                // Build second Gateway close to first gateway 17/25
+                if(supplyUsed == 17 && mineralCount >= 150){
+                        buildGateway();
+                }
+                // Build Dragoon at 18/25
+                if(supplyUsed > 17 && supplyUsed < 20 && hasCyber && mineralCount >= 125 && gasCount >= 50){
+                        buildDrag();
+                }
+                // Upgrade Dragoon at 20/25 at the Assimilator
+                // Build third pylon away from the first two at 21/25
+                if(supplyUsed == 21 && mineralCount >= 100){
+                        buildPylons();
+                }
+                // Build a Citadel at 26/33
+                if(supplyUsed == 26 && mineralCount >= 150 && gasCount >- 100){
+                        buildCitadel();
+                }
         }
 
         /*
@@ -144,28 +218,35 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         @Override
         public void matchFrame() {
-                int mineralCount = bwapi.getSelf().getMinerals();
-                int gasCount = bwapi.getSelf().getGas();
-                // supply used
-                int supplyUsed = bwapi.getSelf().getSupplyUsed();
-                //supply total
-                int supplyTotal = bwapi.getSelf().getSupplyTotal();
 
                 //calling the functions in the matchframe
-                buildAssimilator(mineralCount);
+                buildAssimilator();
                 collectMinerals();
                 collectGas();
                 //System.out.print(hasAssimilator);
-                buildProbes(mineralCount);
-                buildPylons(mineralCount, supplyUsed, supplyTotal);
+                buildProbes();
+                buildPylons();
                 placement();
                 pylonRadius();
-                buildGateway(mineralCount);
-               // buildCitadel(mineralCount, gasCount);
-                buildCyber(mineralCount);
-               // buildTemplarArchive(mineralCount);
-               // buildDrag(mineralCount , gasCount);
-                buildZealots(mineralCount);
+                buildGateway();
+               // buildCitadel(), gasCount);
+                buildCyber();
+               // buildTemplarArchive();
+               // buildDrag() , gasCount);
+                buildZealots();
+
+                //branching off into our enemy-specific games
+                if (enemy == RaceType.RaceTypes.Protoss) {
+                        protossVsPT();
+                        protossVsProtoss();
+                }
+                else if (enemy == RaceType.RaceTypes.Terran) {
+                        protossVsPT();
+                        protossVsTerran();
+                }
+                else {
+                        protossVsZerg();
+                }
 
         }
 
@@ -218,8 +299,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //a function to build the assimilator
-        public void buildAssimilator(int mineralCount){
-                if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
+        public void buildAssimilator(){
+                if (poolProbe != null && !hasAssimilator) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
                                 // Get the geyser that's in our base.
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -246,84 +327,67 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build probes
-        public void buildProbes(int mineralCount){
+        public void buildProbes(){
                 //want to limit the numbeer of probes being built
-                        if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
-                                nexus.train(UnitTypes.Protoss_Probe);
-                        }
+                nexus.train(UnitTypes.Protoss_Probe);
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
-                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
-                                //build the pylon
-                                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
-                                }
-                        }
+        public void buildPylons(){
+                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
+        }
 
         //function to create a gateway
-        public void buildGateway(int mineralCount){
-                if (mineralCount >150 && poolProbe.isIdle() ){
-                        poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
-                        hasGateway = true;
-                        }
-                }
+        public void buildGateway(){
+                poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+                hasGateway = true;
+
+        }
 
         //function to create a cybernetics core
-        public void buildCyber(int mineralCount){
-                if (hasGateway && mineralCount > 300){
+        public void buildCyber(){
+                if (hasGateway) {
                         poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
                         hasCyber = true;
-
                 }
         }
-        public void buildCitadel(int mineralCount, int gasCount){
-                if ( mineralCount > 350 && gasCount > 100 && poolProbe.isIdle()) {
+
+        // function to build a citadel
+        public void buildCitadel() {
+                if (poolProbe.isIdle()) {
                         poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
                 }
         }
-        public void buildTemplarArchive(int mineralCount) {
+
+        // function to build TemplarArchive
+        // if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
+        public void buildTemplarArchive() {
                 //need citadel made beforehand
-                if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
-                        poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
-                        hasArchives = true;
-                }
+                poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
+                hasArchives = true;
         }
 
-        //function to create dragoons
-        public void buildDrag(int mineralCount, int gasCount){
-                if(hasCyber && mineralCount > 300 && gasCount > 50){
-                        for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                        gateway = unit;
-                                        gateway.train(UnitTypes.Protoss_Dragoon);
-                                }
+        // function to create dragoons
+        public void buildDrag(){
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                gateway = unit;
+                                gateway.train(UnitTypes.Protoss_Dragoon);
                         }
                 }
         }
 
         //function to create zealots
-        public void buildZealots(int mineralCount) {
-                if (hasGateway) {
-                        for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                        gateway = unit;
-                                        gateway.train(UnitTypes.Protoss_Zealot);
-                                }
+        // if (hasGateway) {
+        public void buildZealots() {
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                gateway = unit;
+                                gateway.train(UnitTypes.Protoss_Zealot);
                         }
                 }
-
-                // branching off into our enemy-specific games
-                if (enemy == RaceType.RaceTypes.Protoss) {
-                        protossVsProtoss();
-                }
-                else if (enemy == RaceType.RaceTypes.Terran) {
-                        protossVsTerran();
-                }
-                else {
-                        protossVsZerg();
-                }
         }
+
         //function trying to find the radius of the pylon
         public void pylonRadius() {
                 for (Unit pylon : bwapi.getMyUnits()) {
@@ -501,14 +565,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //return true since nothing returned false
                 return true;
         }
-        public void terranEnemy(){
-            //    if( int dragCount >9 && enemyTerran){
-              //  }
-        }
-        public void protossEnemy(){
-              //  if( dragCount >9 && enemyTerran){
-              //  }
-        }
+
         @Override
         public void keyPressed(int keyCode) {}
         @Override
