@@ -47,13 +47,13 @@ public class MinimalAIClient implements BWAPIEventListener {
         ChokePoint myChokePoint;
 
         //booleans to check if a building exists
-        boolean pylonBuilt = false;
-        boolean hasAssimilator = false;
-        boolean hasGateway = false;
-        boolean hasCyber = false;
-        boolean hasCitadel = false;
-        boolean hasArchives = false;
-        boolean hasForge = false;
+        boolean pylonBuilt;
+        boolean hasAssimilator;
+        boolean hasGateway;
+        boolean hasCyber;
+        boolean hasCitadel;
+        boolean hasArchives;
+        boolean hasForge;
 
         //positioning for buildings
         Position pylonPosition;
@@ -88,6 +88,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                 poolProbe = null;
                 gasProbe = null;
                 myChokePoint = null;
+                pylonBuilt = false;
+                hasAssimilator = false;
+                hasGateway = false;
+                hasCyber = false;
+                hasCitadel = false;
+                hasArchives = false;
+                hasForge = false;
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -174,7 +181,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                         pylon = u;
                                                 }
                                         }
-                                        if (pylon != null && pylon.getRemainingBuildTimer() <= 0) {
+                                        if (pylon != null && pylon.getRemainingBuildTimer() <= 5) {
                                                 pylonBuilt = true;
                                         }
                                 }
@@ -201,6 +208,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         // 13 - two Photon Cannons[3]
                         case 13:
                                 buildPhotonCannons(mineralCount);
+                                break;
                 }
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
