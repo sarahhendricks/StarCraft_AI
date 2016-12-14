@@ -166,9 +166,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                 switch (buildOrderNumber) {
                         // 8 - Pylon at Natural Expansion[1]
                         case 8:
-                                if (pylonBuilt == false) {
-                                        buildPylons(mineralCount, supplyUsed, supplyTotal);
-                                        pylonBuilt = true;
+                                if (!pylonBuilt && mineralCount > 100) {
+                                        buildPylons(mineralCount);
+                                        Unit pylon = null;
+                                        for (Unit u : bwapi.getMyUnits()) {
+                                                if (u.getType() == UnitTypes.Protoss_Pylon) {
+                                                        pylon = u;
+                                                }
+                                        }
+                                        if (pylon != null && pylon.getRemainingBuildTimer() <= 0) {
+                                                pylonBuilt = true;
+                                        }
                                 }
                                 if (pylonBuilt) {
                                         buildProbes(mineralCount);
@@ -180,6 +188,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                         // 10 - Forge[2]
                         case 10:
                                 buildForge(mineralCount);
+                                if (hasForge) {
+                                        buildProbes(mineralCount);
+                                }
+                                break;
+                        case 11:
+                                buildProbes(mineralCount);
+                                break;
+                        case 12:
+                                buildProbes(mineralCount);
                                 break;
                         // 13 - two Photon Cannons[3]
                         case 13:
@@ -319,7 +336,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
+        public void buildPylons(int mineralCount){
                 if ( mineralCount >100){
                         poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                 }
