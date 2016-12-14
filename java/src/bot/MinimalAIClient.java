@@ -338,6 +338,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
+        public void zealotsAttack(){
+
+        }
+
         public void placement(){
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
