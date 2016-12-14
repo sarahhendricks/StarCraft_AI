@@ -29,14 +29,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit poolProbe;
         private Unit gasProbe;
         private Unit nexus;
+        private Unit enemyAttack;
         private Unit geyser;
         private Unit minerals;
         private Unit gateway;
-
+        private Unit zealots;
         //neutral unit positions
         Position geyserPosition;
         Position nexusPosition;
         Position mineralPosition;
+        Position enemyPosition;
 
         //our base region variable
         Region baseRegion;
@@ -79,6 +81,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
                 gasProbe = null;
+                zealots = null;
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -88,9 +91,19 @@ public class MinimalAIClient implements BWAPIEventListener {
                         } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe == null) {
                                 gasProbe = u;
                         }
-                        // Print some position information, to understand how it works.
+                                // Print some position information, to understand how it works.
                    //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
                 }
+                /*for (Unit attackUnits : bwapi.getMyUnits()){
+                        if (attackUnits.getType() == UnitTypes.Protoss_Zealot && zealots == null) {
+                                zealots = attackUnits;
+                        }
+                }*/
+
+               /* for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = enemyAttack.getPosition();
+                }*/
                 for (Unit u : bwapi.getNeutralUnits()) {
                         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
@@ -162,11 +175,11 @@ public class MinimalAIClient implements BWAPIEventListener {
                 pylonRadius();
                 buildGateway(mineralCount);
                // buildCitadel(mineralCount, gasCount);
-                buildCyber(mineralCount);
+             //   buildCyber(mineralCount);
                // buildTemplarArchive(mineralCount);
                // buildDrag(mineralCount , gasCount);
                 buildZealots(mineralCount);
-
+                zealotsAttack();
         }
 
         //a function to collect Mineral
@@ -312,18 +325,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
                 }
-
-                // branching off into our enemy-specific games
-                if (enemy == RaceType.RaceTypes.Protoss) {
-                        protossVsProtoss();
-                }
-                else if (enemy == RaceType.RaceTypes.Terran) {
-                        protossVsTerran();
-                }
-                else {
-                        protossVsZerg();
-                }
         }
+
         //function trying to find the radius of the pylon
         public void pylonRadius() {
                 for (Unit pylon : bwapi.getMyUnits()) {
@@ -337,9 +340,22 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
-
-        public void zealotsAttack(){
-
+//making all of the zealots attack
+        public void zealotsAttack() {
+             //   System.out.println("Hi i am a zealot");
+                for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = enemyAttack.getPosition();
+                }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Zealot && unit.isIdle()) {
+                               // zealots = unit;
+                               // System.out.println("Atttackkkk PLEASE");
+                                unit.attack(enemyPosition, false);
+                              //  System.out.println("Atttackkkk");
+                                break;
+                                }
+                }
         }
 
         public void placement(){
