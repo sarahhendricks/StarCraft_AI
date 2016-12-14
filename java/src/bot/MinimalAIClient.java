@@ -28,6 +28,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         //units that are used in multiple functions
         private Unit poolProbe;
         private Unit gasProbe;
+        private Unit gasProbe2;
         private Unit nexus;
         private Unit geyser;
         private Unit minerals;
@@ -90,6 +91,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.setGameSpeed(1);
                 poolProbe = null;
                 gasProbe = null;
+                gasProbe2 = null;
 
 
                 for (Unit u : bwapi.getMyUnits()) {
@@ -99,6 +101,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 poolProbe = u;
                         } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe == null) {
                                 gasProbe = u;
+                        } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe2 == null) {
+                                gasProbe2 = u;
                         }
                         // Print some position information, to understand how it works.
                    //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
@@ -140,8 +144,9 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         private void protossVsPT(){
                 // Build Probes
-                if((supplyUsed/2) < 8 && mineralCount >=50){
+                if((supplyUsed/2) < 8 && mineralCount >=50 && probeCount <9){
                         buildProbes();
+                        probeCount += 1;
                 }
 //              // Collect minerals
 //                collectMinerals();
@@ -150,11 +155,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                         buildPylons();
                 }
                 // Keep building probes
-                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50){
+                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && probeCount <12){
                         buildProbes();
+                        probeCount += 1;
                 }
                 // Gateway at 12/17 supply 150 minerals
-                if((supplyUsed/2) == 12 && mineralCount >= 150){
+                if((supplyUsed/2) >= 12 && mineralCount >= 150 && !hasGateway){
                         buildGateway();
                 }
                 //buildZealots();
@@ -163,21 +169,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                         //System.out.println("assimilator");
                         buildAssimilator(mineralCount);
                 }
-                // Build a probe
-                if((supplyUsed/2) <= 14 && mineralCount >= 50 && hasAssimilator && probeCount <1){
-                        //only want three
-                        buildProbes();
-                        System.out.println(probeCount);
-                        probeCount += 1;
-                }
                 // collect gas
                 collectGas();
                 // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if((supplyUsed/2) == 15 && hasCyber && mineralCount >= 125 && gasCount >= 50){
+                if((supplyUsed/2) >= 14 && hasCyber && mineralCount >= 125 && gasCount >= 50){
                         buildDrag();
                 }
-//                // Build Cyber Core at 15/17 supply && 200 minerals
-                if((supplyUsed/2) == 15 && hasGateway && !hasCyber && mineralCount >= 300){
+//              // Build Cyber Core at 15/17 supply && 200 minerals
+                if((supplyUsed/2) >= 14 && hasGateway && !hasCyber && mineralCount >= 1000){
+                        System.out.println("cyber");
                         buildCyber();
                 }
 //                // Build second Pylon at 16/17 supply
@@ -260,7 +260,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
                                 // You can use referential equality for units, too
-                                if (unit.isIdle() && unit != poolProbe && unit != gasProbe) {
+                                if (unit.isIdle() && unit != poolProbe && unit != gasProbe && unit != gasProbe2) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
@@ -281,7 +281,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void collectGas(){
                 if (hasAssimilator) {
                         for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit == gasProbe) {
+                                if (unit == gasProbe || unit == gasProbe2) {
                                         for (Unit refine : bwapi.getUnits(bwapi.getSelf())) {
                                                 if (refine.getType().isRefinery()) {
                                                         double distance = unit.getDistance(refine);
@@ -347,10 +347,11 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to create a cybernetics core
         public void buildCyber(){
-                if (hasGateway) {
-                        poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
-                        hasCyber = true;
-                }
+                System.out.println("cyber2");
+                System.out.println(mineralCount);
+                System.out.println(supplyUsed/2);
+                poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
+                hasCyber = true;
         }
 
         // function to build a citadel
