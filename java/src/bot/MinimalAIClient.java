@@ -344,20 +344,21 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         // function to build photon canons
         public void buildPhotonCannons(int mineralCount) {
-                Position buildPoint;
+                // need to figure out how to build on the up-side of the choke point
                 Position chokePoint = myChokePoint.getCenter();
                 int xBuild = chokePoint.getX(Position.PosType.PIXEL);
                 int yBuild = chokePoint.getY(Position.PosType.PIXEL);
-                buildPoint = new Position(xBuild - 100, yBuild - 100);
+                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
+                Position change = new Position(xBuild + 150, yBuild + 100);
                 if (mineralCount > 150 && poolProbe.isIdle()) {
                         // not sure if this works
-                        poolProbe.move(buildPoint, false);
-                        System.out.println(bwapi.getMap().isBuildable(buildPoint));
-                        poolProbe.build(buildPoint, UnitTypes.Protoss_Pylon);
-                        poolProbe.build(myChokePoint.getFirstSide(), UnitTypes.Protoss_Photon_Cannon);
+                        poolProbe.move(pylonPoint, false);
+                        System.out.println(bwapi.getMap().isBuildable(pylonPoint));
+                        poolProbe.build(pylonPoint, UnitTypes.Protoss_Pylon);
+                        poolProbe.build(change, UnitTypes.Protoss_Photon_Cannon);
                 }
-                bwapi.drawCircle(buildPoint, 8, BWColor.Green, true, false);
-                bwapi.drawCircle(myChokePoint.getFirstSide(), 8, BWColor.Cyan, true, false);
+                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
+                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
         }
 
         //function to create dragoons
