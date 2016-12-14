@@ -168,6 +168,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                 collectMinerals();
                 if (buildOrderNumber < 8) {
                         buildProbes(mineralCount);
+                        for (Unit minerals : bwapi.getNeutralUnits()) {
+                                baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
+                                if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
+                                        double distance = poolProbe.getDistance(minerals);
+                                        if (distance < 300) {
+                                                gasProbe.rightClick(minerals,false);
+                                                poolProbe.rightClick(minerals, false);
+                                                break;
+                                        }
+                                }
+                        }
                 }
 
                 switch (buildOrderNumber) {
@@ -181,7 +192,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                         pylon = u;
                                                 }
                                         }
-                                        if (pylon != null && pylon.getRemainingBuildTimer() <= 5) {
+                                        if (pylon != null && poolProbe.isIdle()) {
                                                 pylonBuilt = true;
                                         }
                                 }
