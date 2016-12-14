@@ -242,10 +242,15 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
                                         buildPhotonCannon(mineralCount, archivesPosition);
                                 }
-                                if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, gatewayPosition)) {
-                                        buildPhotonCannon(mineralCount, gatewayPosition);
+                                if (buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
+                                        buildProbes(mineralCount);
                                 }
                                 break;
+                        case 13:
+                                buildProbes(mineralCount);
+                                break;
+                        case 14:
+                                
                 }
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
