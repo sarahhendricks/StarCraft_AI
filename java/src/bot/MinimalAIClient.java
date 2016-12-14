@@ -206,37 +206,44 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 break;
                         case 10:
                                 buildProbes(mineralCount);
-                                poolProbe.move(myChokePoint.getCenter(), false);
+//                                poolProbe.move(myChokePoint.getCenter(), false);
                                 break;
                         case 11:
                                 buildProbes(mineralCount);
                                 break;
                         // 13 - two Photon Cannons[3]
                         case 12:
-                                Position chokePoint = myChokePoint.getCenter();
-                                int xBuild = chokePoint.getX(Position.PosType.PIXEL);
-                                int yBuild = chokePoint.getY(Position.PosType.PIXEL);
-                                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
-                                Position change = new Position(xBuild + 150, yBuild + 70);
-                                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
-                                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
+//                                Position chokePoint = myChokePoint.getCenter();
+//                                int xBuild = chokePoint.getX(Position.PosType.PIXEL);
+//                                int yBuild = chokePoint.getY(Position.PosType.PIXEL);
+//                                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
+//                                Position change = new Position(xBuild + 150, yBuild + 70);
+//                                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
+//                                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
 
-                                if (poolProbe.isIdle() && poolProbe.getPosition().getBX() !=
-                                        pylonPoint.getBX()) {
-                                        System.out.println("pool probe idle");
-                                        for (Unit u : bwapi.getMyUnits()) {
-                                                if (u.getType() == UnitTypes.Protoss_Pylon)
-                                                        System.out.println(u.getID()+", "+u.getType());
-                                        }
-                                        poolProbe.move(pylonPoint, false);
+//                                if (poolProbe.isIdle() && poolProbe.getPosition().getBX() !=
+//                                        pylonPoint.getBX()) {
+//                                        System.out.println("pool probe idle");
+////                                        for (Unit u : bwapi.getMyUnits()) {
+////                                                if (u.getType() == UnitTypes.Protoss_Pylon)
+////                                                        System.out.println(u.getID()+", "+u.getType());
+////                                        }
+//                                        poolProbe.move(pylonPoint, false);
+//                                }
+//                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
+//                                        System.out.println("no pylon exists yet.");
+//                                        buildPylons(mineralCount, pylonPoint);
+//                                }
+//                                System.out.println(bwapi.getMap().isBuildable(change));
+//                                System.out.println(buildingExists(UnitTypes.Protoss_Photon_Cannon, change));
+                                if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, citadelPosition)) {
+                                        buildPhotonCannon(mineralCount, citadelPosition);
                                 }
-                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
-                                        System.out.println("no pylon exists yet.");
-                                        buildPylons(mineralCount, pylonPoint);
+                                if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
+                                        buildPhotonCannon(mineralCount, archivesPosition);
                                 }
-                                if (buildingExists(UnitTypes.Protoss_Pylon, pylonPoint) &&
-                                        !buildingExists(UnitTypes.Protoss_Photon_Cannon, change)) {
-                                        buildPhotonCannons(mineralCount, change);
+                                if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, gatewayPosition)) {
+                                        buildPhotonCannon(mineralCount, gatewayPosition);
                                 }
                                 break;
                 }
@@ -434,7 +441,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         // function to build photon canons
-        public void buildPhotonCannons(int mineralCount, Position position) {
+        public void buildPhotonCannon(int mineralCount, Position position) {
                 if (mineralCount > 150 && poolProbe.isIdle()) {
                         poolProbe.build(position, UnitTypes.Protoss_Photon_Cannon);
                 }
