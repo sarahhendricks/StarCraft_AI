@@ -184,30 +184,26 @@ public class MinimalAIClient implements BWAPIEventListener {
                 switch (buildOrderNumber) {
                         // 8 - Pylon at Natural Expansion[1]
                         case 7:
-                                if (!pylonBuilt && mineralCount > 100) {
-                                        buildPylons(mineralCount);
-                                        Unit pylon = null;
-                                        for (Unit u : bwapi.getMyUnits()) {
-                                                if (u.getType() == UnitTypes.Protoss_Pylon) {
-                                                        pylon = u;
-                                                }
-                                        }
-                                        if (pylon != null) {
-                                                pylonBuilt = true;
-                                        }
+                                for (Unit u : bwapi.getEnemyUnits()) {
+                                        gasProbe.move(u.getPosition(), false);
                                 }
-                                if (pylonBuilt) {
+                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPosition) &&
+                                        mineralCount > 100) {
+                                        buildPylons(mineralCount);
+                                }
+                                if (buildingExists(UnitTypes.Protoss_Pylon, pylonPosition)) {
                                         buildProbes(mineralCount);
                                 }
                                 break;
                         case 8:
-                                pylonBuilt = false;
                                 buildProbes(mineralCount);
                                 break;
                         // 10 - Forge[2]
                         case 9:
-                                buildForge(mineralCount);
-                                if (hasForge) {
+                                if (!buildingExists(UnitTypes.Protoss_Forge, forgePosition)) {
+                                        buildForge(mineralCount);
+                                }
+                                if (buildingExists(UnitTypes.Protoss_Forge, forgePosition)) {
                                         buildProbes(mineralCount);
                                 }
                                 break;
@@ -257,6 +253,22 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                buildTemplarArchive(mineralCount);
 //                buildDrag(mineralCount , gasCount);
 //                buildZealots(mineralCount);
+        }
+
+        private boolean buildingExists(UnitType buildingType, Position buildingPosition) {
+                for (Unit u : bwapi.getMyUnits()) {
+                        if (u.getType() == buildingType){
+                                int pos1 = u.getPosition().getX(Position.PosType.BUILD);
+                                int pos2 = buildingPosition.getX(Position.PosType.BUILD);
+                                if (u.getPosition().getX(Position.PosType.BUILD) -
+                                        buildingPosition.getX(Position.PosType.BUILD) <= 3 ||
+                                        u.getPosition().getX(Position.PosType.BUILD) -
+                                                buildingPosition.getX(Position.PosType.BUILD) >= 3) {
+                                        return true;
+                                }
+                        }
+                }
+                return false;
         }
 
         /*
@@ -410,21 +422,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int xBuild = chokePoint.getX(Position.PosType.PIXEL);
                 int yBuild = chokePoint.getY(Position.PosType.PIXEL);
                 Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
+                pylonRadius(pylonPoint);
                 Position change = new Position(xBuild + 150, yBuild + 70);
-                Unit pylon = null;
-                if (mineralCount > 150 && poolProbe.isIdle()) {
-                        // not sure if this works
-                        poolProbe.move(pylonPoint, false);
-                        //System.out.println(bwapi.getMap().isBuildable(pylonPoint));
-                        poolProbe.build(pylonPoint, UnitTypes.Protoss_Pylon);
-                        if (poolProbe.getPosition().getX(Position.PosType.PIXEL) <=
-                                pylonPoint.getX(Position.PosType.PIXEL)) {
-                                pylonBuilt = true;
+                if (mineralCount > 150) {
+                        if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
+                                poolProbe.build(pylonPoint, UnitTypes.Protoss_Pylon);
                         }
-                }
-                if (pylonBuilt) {
-                        poolProbe.move(change, true);
-                        if (poolProbe.getPosition() == change) {
+                        if (buildingExists(UnitTypes.Protoss_Pylon, pylonPoint) &&
+                                !buildingExists(UnitTypes.Protoss_Photon_Cannon, change)) {
                                 poolProbe.build(change, UnitTypes.Protoss_Photon_Cannon);
                         }
                 }
@@ -456,9 +461,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
         //function trying to find the radius of the pylon
-        public void pylonRadius() {
+        public void pylonRadius(Position pylonPoint) {
                 for (Unit pylon : bwapi.getMyUnits()) {
-                        if (pylon.getType() == UnitTypes.Protoss_Pylon) {
+                        if (pylon.getType() == UnitTypes.Protoss_Pylon && pylon.getPosition() == pylonPoint) {
                                 Position top = pylon.getTopLeft();
                               //  System.out.print("This is top left: "+top);
                               //  bwapi.drawBox(top, 5, BWColor.Blue, true, false);
