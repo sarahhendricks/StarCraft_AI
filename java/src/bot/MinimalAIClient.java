@@ -177,7 +177,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                     buildPylons();
                 }
                 // Keep building probes
-                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && probeCount <12){
+                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && probeCount <10){
                         buildProbes();
                         probeCount += 1;
                 }
@@ -189,7 +189,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 //buildZealots();
                 // Assimilator at 13/17 supply and 100 minerals
-                if((supplyUsed/2) >= 13 && mineralCount >= 100 && !hasAssimilator){
+                if((supplyUsed/2) >= 13 && mineralCount >= 100 && !hasAssimilator && hasGateway){
                         //System.out.println("assimilator");
                         buildAssimilator();
                 }
@@ -201,7 +201,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         buildDrag();
                 }
 //              // Build Cyber Core at 15/17 supply && 200 minerals
-                if((supplyUsed/2) >= 14 && !hasCyber && mineralCount >= 200){
+                if((supplyUsed/2) >= 14 && !hasCyber && mineralCount >= 200 && hasGateway && hasAssimilator){
                         System.out.println("cyber");
                         cyberPosition = placement(270, 50);
                         buildCyber();
@@ -338,7 +338,10 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to create a gateway
         public void buildGateway(){
-            poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+            if (poolProbe.isIdle()) {
+                poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+                hasGateway = true;
+            }
         }
 
         //function to create a cybernetics core
