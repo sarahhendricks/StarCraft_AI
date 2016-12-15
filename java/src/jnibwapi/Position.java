@@ -9,6 +9,8 @@ public class Position {
 		public static final Position None = new Position(1000, 1001, PosType.BUILD);
 		public static final Position Unknown = new Position(1000, 1002, PosType.BUILD);
 	}
+
+
 	
 	public static enum PosType {
 		PIXEL(1),
