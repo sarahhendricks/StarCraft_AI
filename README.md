@@ -1,29 +1,18 @@
 # StarCraft_AI
 An artificial intelligence agent for playing StarCraft Brood War.
 
-This is a final team project for CSC-568 Artificial Intelligence.
+This is a final team project for CSC-568 Artificial Intelligence, created by Bex, Makaila, Fei, Natalie, Arunpreet and Sarah.
 
 ## Project requirements:
-Unlike Project 1, there are no individual roles. All team members are held equally responsible for all aspects of the project.
-The basic capabilities of your agents should include:
- - Resource gathering for both minerals and vespene gas.
- - Ability to place buildings for construction.
- - Execution of at least one build order.
- - Ability to construct worker and combat units.
- - Micromanagement of units.
- - Being able to build and use  tier 1 units for each faction:
-    - Terran: SCVs, marines and medics.
-    - Zerg: Drones, zerglings and hydralisks.
-    - Protoss: Probes, zealots, and dragoons.
- - Being able to build and use some tier 2 units for each faction:
-    - Terran: Siege tanks, goliaths, vultures, or wraiths.
-    - Zerg: Lurkers or mutalisks.
-    - Protoss: Templars, dark templars, reavers, observers, or corsairs.
-
 All deliverables should be available on GitHub. Required deliverables include:
  - Code that is clean, documented, and has appropriate class decomposition.
  - High-level overview of your approach (ballpark of 500 words in the README in the base of your repository).
  - Technical summary of your agent including a system diagram, explanation of all major classes, and a time-based guide as to what the agent does over time (also in the README).
+
+## High Level Overview
+At a very high level, the goal of our agent is to survive through the early game and into mid-late game at which point we would begin our offensive. We have two different build orders with rather different strategies. Our main approach was the creation of different functions to build buildings, units, and to attack depending on what point in the game we were. We then organized those functions based on how many units we had room for and what other buildings had been completed in order to follow our build order. 
+
+In our Protoss vs. Protoss/Terran matchup, our priority was following our build order in order to achieve the tier two units we desired, Dark Templars. In the beginning of the game we have all of units harvesting minerals and building more probes until we build our first pylon. Then we build and assimilator and start collecting gas. From there we build our first gateway and start warping in zealots. Then we build a cybernetics core  and then a citadel so that we can build our Templar Archives to begin creation of Dark Templars, whilst creating more Zealots and some Dragoons along the way. Our end goal is to then attack the enemy’s base with our Dark Templars since they are invisible units and destroy their base and win!
 
 ## Code Structure
  One of our overarching goals in the project, was to divide our build paths into a decision tree based on the enemy which we were fighting. Our goal for the code base, was to keep the majority of `matchFrame()` clear of actual code and mainly filled with function calls.
