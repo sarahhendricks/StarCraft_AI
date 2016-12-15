@@ -44,6 +44,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         Region baseRegion;
 
         //booleans to check if a building exists
+        boolean hasPylon = false;
         boolean hasAssimilator = false;
         boolean hasGateway = false;
         boolean hasCyber = false;
@@ -144,23 +145,30 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         private void protossVsPT() {
                 // Build Probes
-                if ((supplyUsed / 2) < 8 && mineralCount >= 50 && probeCount < 9) {
+                if ((supplyUsed / 2) < 8 && mineralCount >= 50 && probeCount < 5) {
                         buildProbes();
                         probeCount += 1;
                 }
 //              // Collect minerals
 //                collectMinerals();
                 // Build a pylon at 8/9 supply && 100 minerals
+                System.out.println("First probe count = " + probeCount);
                 if ((supplyUsed / 2) == 8 && mineralCount >= 100) {
                         buildPylons();
                 }
                 // Keep building probes
-                if ((supplyTotal / 2) > 9 && (supplyUsed / 2) < 12 && mineralCount >= 50 && probeCount < 12) {
+                if ((supplyTotal / 2) >= 8 && (supplyUsed / 2) < 11 && mineralCount >= 50 && probeCount < 7 && hasPylon) {
+                        System.out.println("SupplyUsed after first pylon = " + supplyUsed);
                         buildProbes();
                         probeCount += 1;
                 }
-                // Gateway at 12/17 supply 150 minerals
-                if ((supplyUsed / 2) >= 12 && mineralCount >= 150 && !hasGateway) {
+                System.out.println("Probe count before building gateway = " + probeCount);
+                // Gateway at 10/17 supply 150 minerals
+                if ((supplyUsed / 2) >= 10 && mineralCount >= 150 && !hasGateway) {
+                        // Assignment position for gateway
+                        System.out.println("SupplyUsed at first gateway = " + supplyUsed);
+                        gatewayPosition = placement();
+                        System.out.println("Gateway Position = " + gatewayPosition);
                         buildGateway();
                 }
                 //buildZealots();
@@ -177,7 +185,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
 //              // Build Cyber Core at 15/17 supply && 200 minerals
                 if ((supplyUsed / 2) >= 14 && !hasCyber && mineralCount >= 200) {
-                        System.out.println("cyber");
+                        // Assign position to cyber core
+                        cyberPosition = placement();
+                        System.out.println("CyberCore Position = " + cyberPosition);
                         buildCyber();
                 }
 //                // Build second Pylon at 16/17 supply
@@ -338,18 +348,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         //function to build pylons
         public void buildPylons() {
                 poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
+                hasPylon = true;
         }
 
         //function to create a gateway
         public void buildGateway() {
                 System.out.println("What's wrong? Building gateway?");
-                gatewayPosition = placement();
-                System.out.println("Gateway position = " + gatewayPosition);
                 System.out.println("Pylon Position = " + pylonPosition);
                 System.out.println("Nexus Position = " + nexusPosition);
                 poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
                 hasGateway = true;
-
         }
 
         //function to create a cybernetics core
@@ -462,13 +470,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //euclidean distance to not build in this area
                 pylonPosition = new Position(xBuild, yBuild);
                 //gatewayPosition = new Position(xBuild + 70, yBuild + 70);
-                cyberPosition = new Position(xBuild - 70, yBuild - 70);
+                //cyberPosition = new Position(xBuild - 70, yBuild - 70);
                 citadelPosition = new Position(xBuild + 90, yBuild - 50);
                 archivesPosition = new Position(xBuild - 80, yBuild + 40);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 //bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
-                bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
+                //bwapi.drawCircle(cyberPosition, 8, BWColor.Blue, true, false);
                 bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
                 bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
@@ -493,7 +501,8 @@ public class MinimalAIClient implements BWAPIEventListener {
 
 
                 int max = 200;
-                int offset = 100;
+                // Offset needs to be large enough if it is not the placement function doesn't always work
+                int offset = 80;
                 for (int x_offset = offset; x_offset < max; x_offset += offset) {
                         for (int y_offset = offset; y_offset <= (max); y_offset += offset) {
                                 checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
