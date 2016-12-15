@@ -1,16 +1,13 @@
 package bot;
 
 
-import java.util.HashSet;
+import java.util.*;
 
 import jnibwapi.*;
 import jnibwapi.types.TechType;
 import jnibwapi.types.TechType.TechTypes;
 import jnibwapi.types.UnitType;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import jnibwapi.types.*;
 import jnibwapi.types.UnitType.UnitTypes;
 
@@ -84,7 +81,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.enableUserInput();
                 bwapi.enablePerfectInformation();
 
-                bwapi.setGameSpeed(1);
+                bwapi.setGameSpeed(0);
                 poolProbe = null;
                 gasProbe = null;
                 myChokePoint = null;
@@ -161,13 +158,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int supplyUsed = bwapi.getSelf().getSupplyUsed();
                 //supply total
                 int supplyTotal = bwapi.getSelf().getSupplyTotal();
-
                 int buildOrderNumber = supplyUsed / 2;
-
+                int buildingID = 0;
                 // build order
                 collectMinerals();
                 if (buildOrderNumber < 7) {
-                        buildProbes(mineralCount);
+                    buildProbes(mineralCount);
                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
@@ -180,13 +176,11 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
                 }
-
                 switch (buildOrderNumber) {
                         // 8 - Pylon at Natural Expansion[1]
                         case 7:
-                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPosition) &&
-                                        mineralCount > 100) {
-                                        buildPylons(mineralCount, pylonPosition);
+                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPosition)) {
+                                        Build(mineralCount, UnitTypes.Protoss_Pylon, pylonPosition);
                                 }
                                 if (buildingExists(UnitTypes.Protoss_Pylon, pylonPosition)) {
                                         buildProbes(mineralCount);
@@ -198,7 +192,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         // 10 - Forge[2]
                         case 9:
                                 if (!buildingExists(UnitTypes.Protoss_Forge, forgePosition)) {
-                                        buildForge(mineralCount);
+                                    Build(mineralCount,UnitTypes.Protoss_Forge,forgePosition);
                                 }
                                 if (buildingExists(UnitTypes.Protoss_Forge, forgePosition)) {
                                         buildProbes(mineralCount);
@@ -237,15 +231,17 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                                System.out.println(bwapi.getMap().isBuildable(change));
 //                                System.out.println(buildingExists(UnitTypes.Protoss_Photon_Cannon, change));
                                 if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, citadelPosition)) {
-                                        buildPhotonCannon(mineralCount, citadelPosition);
+                                        Build(mineralCount,UnitTypes.Protoss_Photon_Cannon,citadelPosition);
                                 }
                                 if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
-                                        buildPhotonCannon(mineralCount, archivesPosition);
+                                        Build(mineralCount,UnitTypes.Protoss_Photon_Cannon,archivesPosition);
                                 }
-                                if (buildingExists(UnitTypes.Protoss_Photon_Cannon, gatewayPosition)) {
-                                        buildGateway(mineralCount);
+                                if (!buildingExists(UnitTypes.Protoss_Gateway, gatewayPosition)) {
+                                    Build(mineralCount,UnitTypes.Protoss_Gateway,gatewayPosition);
                                 }
-                                buildZealots(mineralCount);
+                                if (buildingExists(UnitTypes.Protoss_Gateway, gatewayPosition)) {
+                                    buildZealots(mineralCount);
+                                }
                                 break;
                         case 13:
                                 buildProbes(mineralCount);
@@ -390,7 +386,11 @@ public class MinimalAIClient implements BWAPIEventListener {
                         bwapi.drawCircle(u.getPosition(), 5, BWColor.Red, true, false);
                 }
         }
-
+    public void Build(int mineralCount, UnitType building, Position position) {
+        if( mineralCount > building.getMineralPrice()) {
+            poolProbe.build(position, building);
+        }
+    }
         //function to build probes
         public void buildProbes(int mineralCount){
                 if ( mineralCount >= 50 && !nexus.isTraining() &&
@@ -399,18 +399,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        //function to build pylons
-        public void buildPylons(int mineralCount, Position pylonPosition){
-                if ( mineralCount >100){
-                        poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
-                }
-        }
-
         //function to create a gateway
         public void buildGateway(int mineralCount){
                 if (mineralCount >150 && poolProbe.isIdle() ){
                         poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
-                        hasGateway = true;
                         }
                 }
 
@@ -467,14 +459,12 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to create zealots
         public void buildZealots(int mineralCount) {
-                if (hasGateway) {
-                        for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                        gateway = unit;
-                                        gateway.train(UnitTypes.Protoss_Zealot);
-                                }
-                        }
+            for (Unit unit : bwapi.getMyUnits()) {
+                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                    gateway = unit;
+                    gateway.train(UnitTypes.Protoss_Zealot);
                 }
+            }
         }
         //function trying to find the radius of the pylon
         public void pylonRadius(Position pylonPoint) {
@@ -566,6 +556,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         @Override
         public void sendText(String text) {}
         @Override
+        public void unitCreate(int unitID) {}
+        @Override
         public void receiveText(String text) {}
         @Override
         public void nukeDetect(Position p) {}
@@ -573,8 +565,6 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void nukeDetect() {}
         @Override
         public void playerLeft(int playerID) {}
-        @Override
-        public void unitCreate(int unitID) {}
         @Override
         public void unitDestroy(int unitID) {}
         @Override
