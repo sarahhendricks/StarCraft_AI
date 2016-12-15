@@ -40,6 +40,17 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position mineralPosition;
         Position enemyPosition;
 
+    //counter for zealots
+        private int zealotCounter = 0;
+         private int dragoonCounter = 0;
+    //the attackCount is the number of units we plan to send to attack the enemy at a given time
+        private int dragoonAttackCount = 6;
+        private int zealotAttackCount = 6;
+
+    //Queues for the buildings
+        private int zealotQueue = 0;
+         private int dragoonQueue = 0;
+
 
     //our base region variable
         Region baseRegion;
@@ -164,15 +175,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int supplyUsed = bwapi.getSelf().getSupplyUsed();
                 //supply total
                 int supplyTotal = bwapi.getSelf().getSupplyTotal();
-            //counter for zealots
-             int zealotCounter = 0;
-             int dragoonCounter = 0;
-             int dragoonAttackCount = 6;
-             int zealotAttackCount = 3;
-
-            //Queues for the buildings
-             int zealotQueue = 0;
-             int dragoonQueue = 0;
 
                 //calling the functions in the matchframe
                 buildAssimilator(mineralCount);
@@ -325,8 +327,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                                         gateway = unit;
-                                        int dragoonQueue = gateway.getTrainingQueueSize();
-                                        System.out.print(dragoonQueue);
+                                       // int dragoonQueue = gateway.getTrainingQueueSize();
+                                     //   System.out.print(dragoonQueue);
                                         gateway.train(UnitTypes.Protoss_Dragoon);
                                 }
                         }
@@ -341,7 +343,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                     //getting the size of the gateway warp queue
                     zealotQueue = gateway.getTrainingQueueSize();
                 //zealotCounter not working
-                if (hasGateway && mineralCount > 100 && zealotQueue < 2 && zealotCounter <= 2) {
+                if (hasGateway && mineralCount > 100 && zealotQueue < 5 && zealotCounter <= 2) {
                     if(zealotCounter == 3 && zealotQueue != 0){
                         //cancel the remaining warp
                         System.out.print("cancel warp");
@@ -378,7 +380,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-//making all of the zealots attack once we hit a threshold count of the zealots
+//making all of the zealots attack once we hit a threshold count of the zealots, zealots will sit idle until that number is reached
         public void zealotsAttack(int zealotCounter, int zealotAttackCount ) {
 
                 for (Unit u : bwapi.getEnemyUnits()) {
