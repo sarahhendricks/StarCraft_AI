@@ -42,14 +42,14 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position enemyPosition;
 
     //counter for zealots
-        private int zealotCounter = 0;
+         private int zealotCounter = 0;
          private int dragoonCounter = 0;
     //the attackCount is the number of units we plan to send to attack the enemy at a given time
         private int dragoonAttackCount = 6;
         private int zealotAttackCount = 6;
 
     //Queues for the buildings
-        private int zealotQueue = 0;
+         private int zealotQueue = 0;
          private int dragoonQueue = 0;
 
 
@@ -168,6 +168,7 @@ public class MinimalAIClient implements BWAPIEventListener {
          */
         private void protossVsPT(){
                 // Build Probes
+            System.out.print("protoss terran");
                 if((supplyUsed/2) < 8 && mineralCount >=50 && probeCount <9){
                         buildProbes(mineralCount);
                         probeCount += 1;
@@ -176,7 +177,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                collectMinerals();
                 // Build a pylon at 8/9 supply && 100 minerals
                 if((supplyUsed/2) == 8 && mineralCount >= 100){
-                    buildPylons(mineralCount, supplyUsed, supplyTotal);
+                    buildPylons(mineralCount);
                 }
                 // Keep building probes
                 if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && probeCount <12){
@@ -205,9 +206,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                         buildCyber(mineralCount);
                 }
 //                // Build second Pylon at 16/17 supply
-//                if(supplyUsed == 16 && mineralCount >= 100){
-//                        buildPylons();
-//                }
+                 if(supplyUsed == 16 && mineralCount >= 100){
+                        buildPylons(mineralCount);
+                 }
+                     //butwo more zealots
         }
         private void protossVsTerran() {
 //                // Build second Gateway close to first gateway 17/25
@@ -228,11 +230,11 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                        buildCitadel();
 //                }
         }
-
         /*
          * The game strategy for Zerg enemies.
          */
         private void protossVsZerg() {
+            System.out.print("enemy is zerg");
         }
 
         /*
@@ -247,40 +249,38 @@ public class MinimalAIClient implements BWAPIEventListener {
         @Override
         public void matchFrame() {
                 placement();
-                int mineralCount = bwapi.getSelf().getMinerals();
-                int gasCount = bwapi.getSelf().getGas();
+                mineralCount = bwapi.getSelf().getMinerals();
+                gasCount = bwapi.getSelf().getGas();
                 // supply used
-                int supplyUsed = bwapi.getSelf().getSupplyUsed();
+                supplyUsed = bwapi.getSelf().getSupplyUsed();
                 //supply total
-                int supplyTotal = bwapi.getSelf().getSupplyTotal();
-            //counter for zealots
-                int zealotCounter = 0;
-                int dragoonCounter = 0;
-                int dragoonAttackCount = 6;
-                int zealotAttackCount = 3;
+                supplyTotal = bwapi.getSelf().getSupplyTotal();
+               //counter for zealots
+                zealotCounter = 0;
+                dragoonCounter = 0;
+                dragoonAttackCount = 6;
+                zealotAttackCount = 3;
+                //Queues for the buildings
+                zealotQueue = 0;
+                dragoonQueue = 0;
 
-            //Queues for the buildings
-                int zealotQueue = 0;
-                int dragoonQueue = 0;
-
-                //calling the functions in the matchframe
-                buildAssimilator(mineralCount);
+             //   buildAssimilator(mineralCount);
                 collectMinerals();
                 collectGas();
                 //System.out.print(hasAssimilator);
-                buildProbes(mineralCount);
-                buildPylons(mineralCount, supplyUsed, supplyTotal);
-                placement();
-                pylonRadius();
-                buildGateway(mineralCount);
-                buildCitadel(mineralCount, gasCount);
-                buildCyber(mineralCount);
+            //    buildProbes(mineralCount);
+            //    buildPylons(mineralCount, supplyUsed, supplyTotal);
+              //  placement();
+               // pylonRadius();
+               // buildGateway(mineralCount);
+             // /  buildCitadel(mineralCount, gasCount);
+              // / buildCyber(mineralCount);
               ///  buildTemplarArchive(mineralCount, gasCount);
                // buildDrag(mineralCount , gasCount);
-                buildZealots(mineralCount, zealotQueue, zealotCounter);
+               // buildZealots(mineralCount, zealotQueue, zealotCounter);
               //  buildTemplar(mineralCount, gasCount);
-                zealotsAttack(zealotCounter, zealotAttackCount);
-                dragoonsAttack(dragoonCounter, dragoonAttackCount);
+                //zealotsAttack(zealotCounter, zealotAttackCount);
+               // dragoonsAttack(dragoonCounter, dragoonAttackCount);
 
                 //calling the functions in the matchframe
                 //buildAssimilator();
@@ -377,8 +377,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build pylons
-        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
-                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
+        public void buildPylons(int mineralCount ){
+                if ( mineralCount >100){
                                 //build the pylon
                                 poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
                                 }
