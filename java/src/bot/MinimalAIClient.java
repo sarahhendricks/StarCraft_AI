@@ -30,16 +30,30 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit gasProbe;
         private Unit gasProbe2;
         private Unit nexus;
+        private Unit enemyAttack;
         private Unit geyser;
         private Unit minerals;
         private Unit gateway;
-
+        private Unit zealots;
         //neutral unit positions
         Position geyserPosition;
         Position nexusPosition;
         Position mineralPosition;
+        Position enemyPosition;
 
-        //our base region variable
+    //counter for zealots
+        private int zealotCounter = 0;
+         private int dragoonCounter = 0;
+    //the attackCount is the number of units we plan to send to attack the enemy at a given time
+        private int dragoonAttackCount = 6;
+        private int zealotAttackCount = 6;
+
+    //Queues for the buildings
+        private int zealotQueue = 0;
+         private int dragoonQueue = 0;
+
+
+    //our base region variable
         Region baseRegion;
 
         //booleans to check if a building exists
@@ -92,7 +106,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 poolProbe = null;
                 gasProbe = null;
                 gasProbe2 = null;
-
+                zealots = null;
 
                 for (Unit u : bwapi.getMyUnits()) {
                         if (u.getType() == UnitTypes.Protoss_Nexus) {
@@ -104,9 +118,19 @@ public class MinimalAIClient implements BWAPIEventListener {
                         } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe2 == null) {
                                 gasProbe2 = u;
                         }
-                        // Print some position information, to understand how it works.
+                                // Print some position information, to understand how it works.
                    //     System.out.println(String.format("TYPE: %s\nPosition: %s\nTilePosition: %s\n", u.getType(), u.getPosition(), u.getTilePosition()));
                 }
+                /*for (Unit attackUnits : bwapi.getMyUnits()){
+                        if (attackUnits.getType() == UnitTypes.Protoss_Zealot && zealots == null) {
+                                zealots = attackUnits;
+                        }
+                }*/
+
+             /*  for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = u.getPosition();
+                */
                 for (Unit u : bwapi.getNeutralUnits()) {
                         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
@@ -260,7 +284,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 //calling the functions in the matchframe
                 //buildAssimilator();
-                collectMinerals();
+                //collectMinerals();
 
                 //branching off into our enemy-specific games
                 if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
@@ -399,8 +423,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                                         gateway = unit;
-                                        int dragoonQueue = gateway.getTrainingQueueSize();
-                                        System.out.print(dragoonQueue);
+                                       // int dragoonQueue = gateway.getTrainingQueueSize();
+                                     //   System.out.print(dragoonQueue);
+
                                         gateway.train(UnitTypes.Protoss_Dragoon);
                                 }
                         }
@@ -415,15 +440,27 @@ public class MinimalAIClient implements BWAPIEventListener {
                     //getting the size of the gateway warp queue
                     zealotQueue = gateway.getTrainingQueueSize();
                 //zealotCounter not working
-                if (hasGateway && mineralCount > 100 && zealotQueue < 2 && zealotCounter <= 2) {
-                    if(zealotCounter == 3 && zealotQueue != 0){
-                        //cancel the remaining warp
-                        System.out.print("cancel warp");
+                    if (hasGateway && mineralCount > 100 && zealotQueue < 5 && zealotCounter <= 2) {
+                        if(zealotCounter == 3 && zealotQueue != 0){
+                            //cancel the remaining warp
+                            System.out.print("cancel warp");
+                        }
+                        gateway.train(UnitTypes.Protoss_Zealot);
                     }
-                    gateway.train(UnitTypes.Protoss_Zealot);
-                }
                 }
             }
+        }
+
+        //function to create zealots
+        public void buildTemplar( int mineralCount, int gasCount) {
+                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                        gateway = unit;
+                                        gateway.train(UnitTypes.Protoss_Dark_Templar);
+                                }
+                        }
+                }
         }
 
         //function trying to find the radius of the pylon
@@ -440,7 +477,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        //making all of the zealots attack once we hit a threshold count of the zealots
+//making all of the zealots attack once we hit a threshold count of the zealots, zealots will sit idle until that number is reached
         public void zealotsAttack(int zealotCounter, int zealotAttackCount ) {
 
                 for (Unit u : bwapi.getEnemyUnits()) {
@@ -488,7 +525,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
 
-        public void placement() {
+        public void placement(){
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                 //  nexusPosition = nexus.getTilePosition();
@@ -532,10 +569,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 //euclidean distance to not build in this area
                 pylonPosition = new Position(xBuild, yBuild);
+
                 gatewayPosition = new Position(xBuild + 70, yBuild + 70);
                 cyberPosition = new Position(xBuild - 70, yBuild - 70);
-                citadelPosition = new Position(xBuild + 90, yBuild - 50);
-                archivesPosition = new Position(xBuild - 80, yBuild + 40);
+                citadelPosition = new Position(xBuild + 95, yBuild - 60);
+                archivesPosition = new Position(xBuild - 90, yBuild + 60);
+
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
@@ -614,6 +653,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                        }
 //                }
         }
+
         public boolean checkSpot(int checkX, int checkY){
                 Position checkPosition1;
                 Position checkPosition2;
