@@ -39,8 +39,8 @@ All deliverables should be available on GitHub. Required deliverables include:
  - `buildDrag` - Builds Dragoons
  - `buildZealots` - Builds Zealots
  - `pylonRadius` - Checks if buildings are within the region of a Pylon
- - `placement`
- - `checkSpot`
+ - `placement` - Spiral around pylons to the check for closest buildable positions
+ - `checkSpot` - Check the radiuses of each checkposition in placement function
 
 ## Protoss V Protoss/Terran Build Order
 ![Oops! It seems our image is missing, please check back later](https://github.com/sarahhendricks/StarCraft_AI/blob/master/images/PVP.png "Protoss V Protoss/Terran Build Order")
