@@ -43,7 +43,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         //counter for zealots
         private int zealotCounter = 0;
         private int dragoonCounter = 0;
-        private int amountAttack = 3;
+        private int dragoonAttack = 3;
+        private int zealotAttack = 3;
 
         //our base region variable
         Region baseRegion;
@@ -179,12 +180,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 placement();
                 pylonRadius();
                 buildGateway(mineralCount);
-               // buildCitadel(mineralCount, gasCount);
-             //   buildCyber(mineralCount);
-               // buildTemplarArchive(mineralCount);
-               // buildDrag(mineralCount , gasCount);
-                buildZealots();
-                zealotsAttack(zealotCounter, amountAttack);
+                buildCitadel(mineralCount, gasCount);
+                buildCyber(mineralCount);
+                buildTemplarArchive(mineralCount, gasCount);
+                //buildDrag(mineralCount , gasCount);
+               // buildZealots(mineralCount);
+                buildTemplar(mineralCount, gasCount);
+            //    zealotsAttack(zealotCounter, zealotAttack);
+                dragoonsAttack(zealotCounter, dragoonAttack);
         }
 
         //a function to collect Mineral
@@ -292,17 +295,21 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if (hasGateway && mineralCount > 300){
                         poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
                         hasCyber = true;
+                }
+        }
 
-                }
-        }
         public void buildCitadel(int mineralCount, int gasCount){
-                if ( mineralCount > 350 && gasCount > 100 && poolProbe.isIdle()) {
+                if ( !hasCitadel && hasGateway && hasAssimilator && mineralCount > 150 && gasCount > 100 && poolProbe.isIdle()) {
+                        System.out.print("build a citadel Pleeeaassseeee");
                         poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
+                        hasCitadel = true;
                 }
         }
-        public void buildTemplarArchive(int mineralCount) {
+
+        public void buildTemplarArchive(int mineralCount, int gasCount) {
                 //need citadel made beforehand
-                if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
+                if (hasCitadel && mineralCount > 150 && gasCount > 200 && poolProbe.isIdle()) {
+                        System.out.print("BUILD TEMPLAR ARCHIVES");
                         poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
                         hasArchives = true;
                 }
@@ -321,8 +328,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to create zealots
-        public void buildZealots() {
-                if (hasGateway) {
+        public void buildZealots(int mineralCount) {
+                if (hasGateway && mineralCount > 100) {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                                         gateway = unit;
@@ -330,6 +337,18 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
 
+                }
+        }
+
+        //function to create zealots
+        public void buildTemplar( int mineralCount, int gasCount) {
+                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                        gateway = unit;
+                                        gateway.train(UnitTypes.Protoss_Dark_Templar);
+                                }
+                        }
                 }
         }
 
@@ -348,7 +367,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
 //making all of the zealots attack once we hit a threshold count of the zealots
-        public void zealotsAttack(int zealotCounter, int amountAttack ) {
+        public void zealotsAttack(int zealotCounter, int zealotAttack ) {
 
                 for (Unit u : bwapi.getEnemyUnits()) {
                         enemyAttack = u;
@@ -360,7 +379,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
                 //starts building when it starts to build the x zealot so we need to attack at x+1
-                if (zealotCounter >= (amountAttack  + 1)) {
+                if (zealotCounter >= (zealotAttack  + 1)) {
                         for (Unit  zealot : bwapi.getMyUnits()) {
                                 if (zealot.getType() == UnitTypes.Protoss_Zealot && zealot.isIdle()) {
                                       //  System.out.println("Atttackkkk PLEASE");
@@ -373,7 +392,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //making all of the dragoons attack once we hit a threshold count of the dragoons
-        public void dragoonAttack(int dragoonCounter) {
+        public void dragoonsAttack(int dragoonCounter, int dragoonAttack) {
                 for (Unit u : bwapi.getEnemyUnits()) {
                         enemyAttack = u;
                         enemyPosition = enemyAttack.getPosition();
@@ -384,7 +403,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
                 //starts building when it starts to build the x zealot so we need to attack at x+1
-                if (dragoonCounter >= 4) {
+                if (dragoonCounter >= (dragoonAttack +1)) {
                         for (Unit  drag : bwapi.getMyUnits()) {
                                 if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isIdle()) {
                                         drag.attack(enemyPosition, false);
@@ -442,8 +461,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                 pylonPosition = new Position(xBuild, yBuild);
                 gatewayPosition = new Position(xBuild+70, yBuild+70);
                 cyberPosition = new Position(xBuild-70, yBuild-70);
-                citadelPosition = new Position(xBuild+90, yBuild-50);
-                archivesPosition = new Position(xBuild-80, yBuild+40);
+                citadelPosition = new Position(xBuild+95, yBuild-60);
+                archivesPosition = new Position(xBuild-90, yBuild+60);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
