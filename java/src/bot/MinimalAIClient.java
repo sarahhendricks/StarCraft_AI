@@ -40,6 +40,11 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position mineralPosition;
         Position enemyPosition;
 
+        //counter for zealots
+        private int zealotCounter = 0;
+        private int dragoonCounter = 0;
+        private int amountAttack = 3;
+
         //our base region variable
         Region baseRegion;
 
@@ -100,10 +105,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }*/
 
-               /* for (Unit u : bwapi.getEnemyUnits()) {
+             /*  for (Unit u : bwapi.getEnemyUnits()) {
                         enemyAttack = u;
-                        enemyPosition = enemyAttack.getPosition();
-                }*/
+                        enemyPosition = u.getPosition();
+                */
                 for (Unit u : bwapi.getNeutralUnits()) {
                         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
@@ -178,8 +183,8 @@ public class MinimalAIClient implements BWAPIEventListener {
              //   buildCyber(mineralCount);
                // buildTemplarArchive(mineralCount);
                // buildDrag(mineralCount , gasCount);
-                buildZealots(mineralCount);
-                zealotsAttack();
+                buildZealots();
+                zealotsAttack(zealotCounter, amountAttack);
         }
 
         //a function to collect Mineral
@@ -316,7 +321,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to create zealots
-        public void buildZealots(int mineralCount) {
+        public void buildZealots() {
                 if (hasGateway) {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
@@ -324,6 +329,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         gateway.train(UnitTypes.Protoss_Zealot);
                                 }
                         }
+
                 }
         }
 
@@ -340,21 +346,51 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
-//making all of the zealots attack
-        public void zealotsAttack() {
-             //   System.out.println("Hi i am a zealot");
+
+//making all of the zealots attack once we hit a threshold count of the zealots
+        public void zealotsAttack(int zealotCounter, int amountAttack ) {
+
                 for (Unit u : bwapi.getEnemyUnits()) {
                         enemyAttack = u;
                         enemyPosition = enemyAttack.getPosition();
                 }
                 for (Unit unit : bwapi.getMyUnits()) {
-                        if (unit.getType() == UnitTypes.Protoss_Zealot && unit.isIdle()) {
-                               // zealots = unit;
-                               // System.out.println("Atttackkkk PLEASE");
-                                unit.attack(enemyPosition, false);
-                              //  System.out.println("Atttackkkk");
-                                break;
+                        if (unit.getType() == UnitTypes.Protoss_Zealot) {
+                                zealotCounter = zealotCounter + 1;
+                        }
+                }
+                //starts building when it starts to build the x zealot so we need to attack at x+1
+                if (zealotCounter >= (amountAttack  + 1)) {
+                        for (Unit  zealot : bwapi.getMyUnits()) {
+                                if (zealot.getType() == UnitTypes.Protoss_Zealot && zealot.isIdle()) {
+                                      //  System.out.println("Atttackkkk PLEASE");
+                                        zealot.attack(enemyPosition, false);
+                                      //  System.out.println("Atttackkkk");
+                                        break;
                                 }
+                        }
+                }
+        }
+
+        //making all of the dragoons attack once we hit a threshold count of the dragoons
+        public void dragoonAttack(int dragoonCounter) {
+                for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = enemyAttack.getPosition();
+                }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Dragoon) {
+                                dragoonCounter = dragoonCounter + 1;
+                        }
+                }
+                //starts building when it starts to build the x zealot so we need to attack at x+1
+                if (dragoonCounter >= 4) {
+                        for (Unit  drag : bwapi.getMyUnits()) {
+                                if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isIdle()) {
+                                        drag.attack(enemyPosition, false);
+                                        break;
+                                }
+                        }
                 }
         }
 
