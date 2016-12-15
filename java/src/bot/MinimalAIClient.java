@@ -20,7 +20,7 @@ import jnibwapi.BWAPIEventListener;
 import jnibwapi.JNIBWAPI;
 import jnibwapi.Position;
 import jnibwapi.Unit;
-//import jnibwapi.util.BWColor;
+import jnibwapi.util.BWColor;
 
 public class MinimalAIClient implements BWAPIEventListener {
         private final JNIBWAPI bwapi;
@@ -169,23 +169,23 @@ public class MinimalAIClient implements BWAPIEventListener {
         private void protossVsPT(){
                 // Build Probes
                 if((supplyUsed/2) < 8 && mineralCount >=50 && probeCount <9){
-                        buildProbes();
+                        buildProbes(mineralCount);
                         probeCount += 1;
                 }
 //              // Collect minerals
 //                collectMinerals();
                 // Build a pylon at 8/9 supply && 100 minerals
                 if((supplyUsed/2) == 8 && mineralCount >= 100){
-                        buildPylons();
+                    buildPylons(mineralCount, supplyUsed, supplyTotal);
                 }
                 // Keep building probes
                 if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && probeCount <12){
-                        buildProbes();
+                        buildProbes(mineralCount);
                         probeCount += 1;
                 }
                 // Gateway at 12/17 supply 150 minerals
                 if((supplyUsed/2) >= 12 && mineralCount >= 150 && !hasGateway){
-                        buildGateway();
+                        buildGateway(mineralCount);
                 }
                 //buildZealots();
                 // Assimilator at 13/17 supply and 100 minerals
@@ -197,12 +197,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 collectGas();
                 // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
                 if((supplyUsed/2) >= 14 && hasCyber && mineralCount >= 125 && gasCount >= 50){
-                        buildDrag();
+                        buildDrag(mineralCount, gasCount);
                 }
 //              // Build Cyber Core at 15/17 supply && 200 minerals
                 if((supplyUsed/2) >= 14 && hasGateway && !hasCyber && mineralCount >= 1000){
                         System.out.println("cyber");
-                        buildCyber();
+                        buildCyber(mineralCount);
                 }
 //                // Build second Pylon at 16/17 supply
 //                if(supplyUsed == 16 && mineralCount >= 100){
