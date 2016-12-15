@@ -43,7 +43,7 @@ All deliverables should be available on GitHub. Required deliverables include:
  - `checkSpot`
 
 ## Protoss V Protoss/Terran Build Order
-![alt text](https://github.com/sarahhendricks/StarCraft_AI/images/PVP.png "Protoss V Protoss/Terran Build Order")
+![Oops! It seems our image is missing, please check back later](https://github.com/sarahhendricks/StarCraft_AI/blob/master/images/PVP.png "Protoss V Protoss/Terran Build Order")
 
 ## Protoss V Zerg Build Order
-![alt text](https://github.com/sarahhendricks/StarCraft_AI/images/PVZ.png "Protoss V Protoss/Terran Build Order")
+![Oops! It seems our image is missing, please check back later](https://github.com/sarahhendricks/StarCraft_AI/blob/master/images/PVZ.png "Protoss V Protoss/Terran Build Order")
