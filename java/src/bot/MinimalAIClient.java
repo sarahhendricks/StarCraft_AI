@@ -169,7 +169,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if((supplyUsed/2) < 8 && mineralCount >=50){
                     buildProbes();
                 }
-//              // Collect minerals
                 // Build a pylon at 8/9 supply && 100 minerals
                 if((supplyUsed/2) == 8 && mineralCount >= UnitTypes.Protoss_Pylon.getMineralPrice()){
                     buildPylons(pylonPosition);
@@ -180,35 +179,26 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 // Gateway at 12/17 supply 150 minerals
                 if((supplyUsed/2) >= 12 && mineralCount >= 150 && !hasBuild(UnitTypes.Protoss_Gateway)){
-                    System.out.println("gateway");
                     gatewayPosition = placement(40, 80, 5);
                     buildGateway();
                 }
-                //buildZealots();
                 // Assimilator at 13/17 supply and 100 minerals
                 if((supplyUsed/2) >= 13 && mineralCount >= 100 && !hasBuild(UnitTypes.Protoss_Assimilator) && hasBuild(UnitTypes.Protoss_Gateway)){
-                        //System.out.println("assimilator");
                         buildAssimilator();
                 }
                 // collect gas
                 collectGas();
                 // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if((supplyUsed/2) >= 14 && mineralCount >= 125 && gasCount >= 50 && !hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
-                        //System.out.println("Dragoon");
+                if((supplyUsed/2) >= 14 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
                         buildDrag();
                 }
-//              // Build Cyber Core at 15/17 supply && 200 minerals
-                if((supplyUsed/2) >= 14 && mineralCount >= 200 && !hasBuild(UnitTypes.Protoss_Cybernetics_Core) && hasBuild(UnitTypes.Protoss_Gateway) && hasBuild(UnitTypes.Protoss_Assimilator)){
-                        //System.out.println("cyber");
-                        System.out.println(placement(80, 240, 50));
+                // Build Cyber Core at 15/17 supply && 200 minerals
+                if((supplyUsed/2) >= 14 && mineralCount >= 200 && !hasBuild(UnitTypes.Protoss_Cybernetics_Core) && hasBuild(UnitTypes.Protoss_Assimilator)){
                         cyberPosition = placement(60, 160, 20);
-
                         buildCyber();
                 }
-//                // Build second Pylon at 16/17 supply
+                // Build second Pylon at 16/17 supply
                  if((supplyUsed/2) >= 15 && mineralCount >= 100 && !(numType(UnitTypes.Protoss_Pylon)==2)){
-                        //gatewayPosition = placement(270, 50);
-                        System.out.println("here");
                         buildPylons(placement(300, 700, 50));
                  }
         }
@@ -402,17 +392,12 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to create dragoons
         public void buildDrag(){
-                if(hasCyber && mineralCount > 300 && gasCount > 50){
-                        for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                        gateway = unit;
-                                       // int dragoonQueue = gateway.getTrainingQueueSize();
-                                     //   System.out.print(dragoonQueue);
-
-                                        gateway.train(UnitTypes.Protoss_Dragoon);
-                                }
-                        }
-                }
+            for (Unit unit : bwapi.getMyUnits()) {
+              if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                  gateway = unit;
+                  gateway.train(UnitTypes.Protoss_Dragoon);
+              }
+            }
         }
 
         //function to create zealots
