@@ -223,26 +223,44 @@ public class MinimalAIClient implements BWAPIEventListener {
         @Override
         public void matchFrame() {
                 placement();
-                mineralCount = bwapi.getSelf().getMinerals();
-                gasCount = bwapi.getSelf().getGas();
-                supplyUsed = bwapi.getSelf().getSupplyUsed();
-                supplyTotal = bwapi.getSelf().getSupplyTotal();
+                int mineralCount = bwapi.getSelf().getMinerals();
+                int gasCount = bwapi.getSelf().getGas();
+                // supply used
+                int supplyUsed = bwapi.getSelf().getSupplyUsed();
+                //supply total
+                int supplyTotal = bwapi.getSelf().getSupplyTotal();
+            //counter for zealots
+                int zealotCounter = 0;
+                int dragoonCounter = 0;
+                int dragoonAttackCount = 6;
+                int zealotAttackCount = 3;
+
+            //Queues for the buildings
+                int zealotQueue = 0;
+                int dragoonQueue = 0;
+
+                //calling the functions in the matchframe
+                buildAssimilator(mineralCount);
+                collectMinerals();
+                collectGas();
+                //System.out.print(hasAssimilator);
+                buildProbes(mineralCount);
+                buildPylons(mineralCount, supplyUsed, supplyTotal);
+                placement();
+                pylonRadius();
+                buildGateway(mineralCount);
+                buildCitadel(mineralCount, gasCount);
+                buildCyber(mineralCount);
+              ///  buildTemplarArchive(mineralCount, gasCount);
+               // buildDrag(mineralCount , gasCount);
+                buildZealots(mineralCount, zealotQueue, zealotCounter);
+              //  buildTemplar(mineralCount, gasCount);
+                zealotsAttack(zealotCounter, zealotAttackCount);
+                dragoonsAttack(dragoonCounter, dragoonAttackCount);
 
                 //calling the functions in the matchframe
                 //buildAssimilator();
                 collectMinerals();
-                //collectGas();
-                //System.out.print(hasAssimilator);
-//                buildProbes();
-//                buildPylons();
-//                placement();
-//                pylonRadius();
-//                buildGateway();
-               // buildCitadel(), gasCount);
-                //buildCyber();
-               // buildTemplarArchive();
-               // buildDrag() , gasCount);
-                //buildZealots();
 
                 //branching off into our enemy-specific games
                 if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
@@ -300,7 +318,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //a function to build the assimilator
         public void buildAssimilator(int mineralCount){
-                if (poolProbe != null) {
+                if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
                                 // Get the geyser that's in our base.
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -327,67 +345,85 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to build probes
-        public void buildProbes(){
+        public void buildProbes(int mineralCount){
                 //want to limit the numbeer of probes being built
-                //System.out.println("Enough minerals");
-                nexus.train(UnitTypes.Protoss_Probe);
+                        if ( mineralCount >= 50 && bwapi.getSelf().getSupplyUsed() < 16) {
+                                nexus.train(UnitTypes.Protoss_Probe);
+                        }
         }
 
         //function to build pylons
-        public void buildPylons(){
-                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
-        }
+        public void buildPylons(int mineralCount, int supplyUsed,int supplyTotal ){
+                if (supplyUsed + 2 >= supplyTotal && mineralCount >100){
+                                //build the pylon
+                                poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
+                                }
+                        }
 
         //function to create a gateway
-        public void buildGateway(){
-                poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
-                hasGateway = true;
-
-        }
+        public void buildGateway(int mineralCount){
+                if (mineralCount >150 && poolProbe.isIdle() ){
+                        poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+                        hasGateway = true;
+                        }
+                }
 
         //function to create a cybernetics core
-        public void buildCyber(){
-                System.out.println("cyber2");
-                System.out.println(mineralCount);
-                System.out.println(supplyUsed/2);
-                poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
-                hasCyber = true;
-        }
-
-        // function to build a citadel
-        public void buildCitadel() {
-                if (poolProbe.isIdle()) {
-                        poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
+        public void buildCyber(int mineralCount){
+                if (hasGateway && mineralCount > 300){
+                        poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
+                        hasCyber = true;
                 }
         }
 
-        // function to build TemplarArchive
-        // if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
-        public void buildTemplarArchive() {
-                //need citadel made beforehand
-                poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
-                hasArchives = true;
+        public void buildCitadel(int mineralCount, int gasCount){
+                if ( !hasCitadel && hasGateway && hasAssimilator && mineralCount > 150 && gasCount > 100 && poolProbe.isIdle()) {
+                        System.out.print("build a citadel Pleeeaassseeee");
+                        poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
+                        hasCitadel = true;
+                }
         }
 
-        // function to create dragoons
-        public void buildDrag(){
-                for (Unit unit : bwapi.getMyUnits()) {
-                        if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                gateway = unit;
-                                gateway.train(UnitTypes.Protoss_Dragoon);
+        public void buildTemplarArchive(int mineralCount, int gasCount) {
+                //need citadel made beforehand
+                if (hasCitadel && mineralCount > 150 && gasCount > 200 && poolProbe.isIdle()) {
+                        System.out.print("BUILD TEMPLAR ARCHIVES");
+                        poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
+                        hasArchives = true;
+                }
+        }
+
+        //function to create dragoons
+        public void buildDrag(int mineralCount, int gasCount){
+                if(hasCyber && mineralCount > 300 && gasCount > 50){
+                        for (Unit unit : bwapi.getMyUnits()) {
+                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                                        gateway = unit;
+                                        int dragoonQueue = gateway.getTrainingQueueSize();
+                                        System.out.print(dragoonQueue);
+                                        gateway.train(UnitTypes.Protoss_Dragoon);
+                                }
                         }
                 }
         }
 
         //function to create zealots
-        // if (hasGateway) {
-        public void buildZealots() {
-                for (Unit unit : bwapi.getMyUnits()) {
-                        if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                gateway = unit;
-                                gateway.train(UnitTypes.Protoss_Zealot);
-                        }
+        public void buildZealots(int mineralCount, int zealotQueue, int zealotCounter) {
+            for (Unit unit : bwapi.getMyUnits()) {
+                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                    gateway = unit;
+                    //getting the size of the gateway warp queue
+                    zealotQueue = gateway.getTrainingQueueSize();
+                //zealotCounter not working
+                if (hasGateway && mineralCount > 100 && zealotQueue < 2 && zealotCounter <= 2) {
+                    if(zealotCounter == 3 && zealotQueue != 0){
+                        //cancel the remaining warp
+                        System.out.print("cancel warp");
+                    }
+                    gateway.train(UnitTypes.Protoss_Zealot);
                 }
+                }
+            }
         }
 
         //function trying to find the radius of the pylon
@@ -403,6 +439,54 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
+        //making all of the zealots attack once we hit a threshold count of the zealots
+        public void zealotsAttack(int zealotCounter, int zealotAttackCount ) {
+
+                for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = enemyAttack.getPosition();
+                }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Zealot) {
+                                zealotCounter = zealotCounter + 1;
+                        }
+                }
+                //starts building when it starts to build the x zealot so we need to attack at x+1
+                if (zealotCounter >= (zealotAttackCount  + 1)) {
+                        for (Unit  zealot : bwapi.getMyUnits()) {
+                                if (zealot.getType() == UnitTypes.Protoss_Zealot && zealot.isIdle()) {
+                                      //  System.out.println("Atttackkkk PLEASE");
+                                        zealot.attack(enemyPosition, false);
+                                      //  System.out.println("Atttackkkk");
+                                        break;
+                                }
+                        }
+                }
+        }
+
+        //making all of the dragoons attack once we hit a threshold count of the dragoons
+        public void dragoonsAttack(int dragoonCounter, int dragoonAttackCount) {
+                for (Unit u : bwapi.getEnemyUnits()) {
+                        enemyAttack = u;
+                        enemyPosition = enemyAttack.getPosition();
+                }
+                for (Unit unit : bwapi.getMyUnits()) {
+                        if (unit.getType() == UnitTypes.Protoss_Dragoon) {
+                                dragoonCounter = dragoonCounter + 1;
+                        }
+                }
+                //starts building when it starts to build the x zealot so we need to attack at x+1
+                if (dragoonCounter >= (dragoonAttackCount +1)) {
+                        for (Unit  drag : bwapi.getMyUnits()) {
+                                if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isIdle()) {
+                                        drag.attack(enemyPosition, false);
+                                        break;
+                                }
+                        }
+                }
+        }
+
 
         public void placement() {
 
