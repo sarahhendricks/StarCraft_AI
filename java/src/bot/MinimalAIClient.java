@@ -67,6 +67,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         //Position gatewayPosition;
         //Position cyberPosition;
         Position buildPosition;
+        Position center;
+        Position firstChoke;
+        Position secondChoke;
         //Position citadelPosition;
         //Position archivesPosition;
         private Set<Player> enemies;
@@ -211,13 +214,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                     buildZealots();
                 }
                 // 17-19/25 Build gateway
-                if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)<2 && numType(UnitTypes.Protoss_Pylon)==2){
-                    Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
-                    System.out.println("1" + usePosition);
-                    Position placeGate = placement(usePosition, 40, 100, 5);
-                    System.out.println("2" + placeGate);
-                    buildGateway(placeGate);
-                }
+               // if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)<2 && numType(UnitTypes.Protoss_Pylon)==2){
+                   // Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
+                    //System.out.println("1" + usePosition);
+                    //Position placeGate = placement(usePosition, 40, 100, 5);
+                    //System.out.println("2" + placeGate);
+                  //  buildGateway(placeGate);
+                //}
         }
 
         /*
@@ -251,7 +254,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 collectMinerals();
                 collectGas();
                 gasProbeCollect();
-
+                findChokePoint();
                 //branching off into our enemy-specific games
                 if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
                         protossVsPT();
@@ -379,10 +382,10 @@ public class MinimalAIClient implements BWAPIEventListener {
             int count = 0;
             for (Unit u : bwapi.getMyUnits()) {
                 if (u.getType() == testType) {
-                    System.out.println(index);
+                   // System.out.println(index);
                     count += 1;
                     if (count == index){
-                        System.out.println(u.getPosition());
+                       // System.out.println(u.getPosition());
                         return u.getPosition();
                     }
                 }
@@ -478,9 +481,17 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
             return (q + numType(UnitTypes.Protoss_Zealot));
         }
-
-        //function to create zealots
-        public void buildTemplar( int mineralCount, int gasCount) {
+    public int numDragoon(){
+        int q = 0;
+        for (Unit unit : bwapi.getMyUnits()) {
+            if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                q = unit.getTrainingQueueSize();
+            }
+        }
+        return (q + numType(UnitTypes.Protoss_Dragoon));
+    }
+    //function to create zealots
+    public void buildTemplar( int mineralCount, int gasCount) {
 //                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
 //                        for (Unit unit : bwapi.getMyUnits()) {
 //                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
@@ -489,7 +500,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                                }
 //                        }
 //                }
-        }
+    }
 
         //function trying to find the radius of the pylon
         public void pylonRadius() {
@@ -504,6 +515,41 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
+
+        public void findChokePoint(){
+            nexusPosition = nexus.getPosition();
+            int regionID = bwapi.getMap().getRegion(nexusPosition).getID();
+            firstChoke = bwapi.getMap().getRegion(regionID).getChokePoints().iterator().next().getFirstSide();
+            center = bwapi.getMap().getRegion(regionID).getChokePoints().iterator().next().getCenter();
+            secondChoke = bwapi.getMap().getRegion(regionID).getChokePoints().iterator().next().getSecondSide();
+            bwapi.drawCircle(firstChoke, 8, BWColor.Blue, true, false);
+            bwapi.drawCircle(center, 8, BWColor.Teal, true, false);
+            bwapi.drawCircle(secondChoke, 8, BWColor.Purple, true, false);
+        }
+
+        public void sendDrag() {
+            int positionCounter = 0;
+            for (Unit  dragoon : bwapi.getMyUnits()) {
+                if (dragoon.getType() == UnitTypes.Protoss_Dragoon && dragoon.isIdle()) {
+                    positionCounter ++;
+                        if (positionCounter % 3 == 0) {
+                            dragoon.move(center, false);
+                            dragoon.holdPosition(true);
+                            break;
+                        }
+                        else if(positionCounter %3 ==1){
+                            dragoon.move(firstChoke, false);
+                            dragoon.holdPosition(true);
+                            break;
+                        }
+                        else if (positionCounter %3 ==2 ){
+                            dragoon.move(secondChoke, false);
+                            dragoon.holdPosition(true);
+                            break;
+                        }
+                    }
+                }
+            }
 
 //making all of the zealots attack once we hit a threshold count of the zealots, zealots will sit idle until that number is reached
         public void zealotsAttack(int zealotCounter, int zealotAttackCount ) {
@@ -620,7 +666,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
                                                 bwapi.drawCircle(checkPosition1, 3, BWColor.Yellow, true, false);
                                                 buildPosition = checkPosition1;
-                                                System.out.println("Check Position = " + checkPosition1);
+                                           //     System.out.println("Check Position = " + checkPosition1);
                                                 break;
                                         }
                                 }
@@ -678,7 +724,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         break;
                         }
                 }
-                System.out.println("Build Position = " + buildPosition);
+              //  System.out.println("Build Position = " + buildPosition);
                 return buildPosition;
         }
 
