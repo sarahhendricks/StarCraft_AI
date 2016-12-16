@@ -22,7 +22,7 @@ import jnibwapi.util.BWColor;
 import jnibwapi.Map;
 import sun.management.counter.Units;
 
-public class MinimalAIClient implements BWAPIEventListener {
+public class ZergAI implements BWAPIEventListener {
     private final JNIBWAPI bwapi;
 
     //units that are used in multiple functions
@@ -53,7 +53,6 @@ public class MinimalAIClient implements BWAPIEventListener {
     boolean hasArchives;
     boolean hasForge;
 
-    ZergAI zergAI;
     //Build order
     int[] buildOrderArray = new int[7];
     int buildOrderIndex = 0;
@@ -75,7 +74,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         new MinimalAIClient();
     }
 
-    public MinimalAIClient() {
+    public ZergAI() {
         bwapi = new JNIBWAPI(this, true);
         bwapi.start();
     }
@@ -87,7 +86,7 @@ public class MinimalAIClient implements BWAPIEventListener {
     @Override
     public void matchStart() {
         System.out.println("Game Started");
-        zergAI = new ZergAI();
+
         bwapi.enableUserInput();
         bwapi.enablePerfectInformation();
 
@@ -121,28 +120,15 @@ public class MinimalAIClient implements BWAPIEventListener {
         //bwapi.setGameSpeed(0);
 
         // Determine what race the enemy is.
-        enemies = bwapi.getEnemies();
-        for (Iterator<Player> it = enemies.iterator(); it.hasNext(); ) {
-            RaceType race = it.next().getRace();
-            if (race.equals(RaceType.RaceTypes.Protoss)) {
-                System.out.println("enemy is protoss");
-                enemy = RaceType.RaceTypes.Protoss;
-            } else if (race.equals(RaceType.RaceTypes.Zerg)) {
-                System.out.println("enemy is zerg");
-                enemy = RaceType.RaceTypes.Zerg;
-                buildOrderArray[0] = (UnitTypes.Protoss_Pylon.getID());
-                //buildOrderArray[1] = (UnitTypes.Protoss_Assimilator.getID());
-                buildOrderArray[1] = (UnitTypes.Protoss_Forge.getID());
-                buildOrderArray[2] = (UnitTypes.Protoss_Pylon.getID());
-                buildOrderArray[3] = (UnitTypes.Protoss_Photon_Cannon.getID());
-                buildOrderArray[4] = (UnitTypes.Protoss_Pylon.getID());
-                buildOrderArray[5] = (UnitTypes.Protoss_Photon_Cannon.getID());
-                buildOrderArray[6] = (UnitTypes.Protoss_Gateway.getID());
-            } else {
-                System.out.println("enemy is terran");
-                enemy = RaceType.RaceTypes.Terran;
-            }
-        }
+
+        buildOrderArray[0] = (UnitTypes.Protoss_Pylon.getID());
+        //buildOrderArray[1] = (UnitTypes.Protoss_Assimilator.getID());
+        buildOrderArray[1] = (UnitTypes.Protoss_Forge.getID());
+        buildOrderArray[2] = (UnitTypes.Protoss_Pylon.getID());
+        buildOrderArray[3] = (UnitTypes.Protoss_Photon_Cannon.getID());
+        buildOrderArray[4] = (UnitTypes.Protoss_Pylon.getID());
+        buildOrderArray[5] = (UnitTypes.Protoss_Photon_Cannon.getID());
+        buildOrderArray[6] = (UnitTypes.Protoss_Gateway.getID());
 
         int closestChokePoint = 1000;
         for (ChokePoint chokePoint : bwapi.getMap().getChokePoints()) {
@@ -157,15 +143,9 @@ public class MinimalAIClient implements BWAPIEventListener {
     }
 
     /*
-     * The game strategy for Terran enemies.
-     */
-    private void protossVsTerran() {
-    }
-
-    /*
      * The game strategy for Zerg enemies.
      */
-    private void protossVsZerg() {
+    public void protossVsZerg() {
         firstPylonPosition();
         int mineralCount = bwapi.getSelf().getMinerals();
         int gasCount = bwapi.getSelf().getGas();
@@ -215,7 +195,7 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
         buildProbes(mineralCount);
-        }
+    }
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
 //                 * 18 - Gateway [5]
@@ -233,8 +213,8 @@ public class MinimalAIClient implements BWAPIEventListener {
 //                 * @ 2 Archons - Zealot Speedupgrade
 //                 * @ ~95% +1 Attack Upgrade - Army moves out
 //                 */
-        //placement();
-        //calling the functions in the matchframe
+    //placement();
+    //calling the functions in the matchframe
 
 
 //                buildAssimilator(mineralCount);
@@ -276,14 +256,7 @@ public class MinimalAIClient implements BWAPIEventListener {
      */
     @Override
     public void matchFrame() {
-        // branching off into our enemy-specific games
-        if (enemy == RaceType.RaceTypes.Protoss) {
-            protossVsProtoss();
-        } else if (enemy == RaceType.RaceTypes.Terran) {
-            protossVsTerran();
-        } else {
-            zergAI.protossVsZerg();
-        }
+        protossVsZerg();
     }
 
     //a function to collect Mineral
