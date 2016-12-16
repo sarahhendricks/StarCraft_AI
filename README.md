@@ -1,4 +1,4 @@
- # StarCraft_AI
+# StarCraft_AI
 An artificial intelligence agent for playing StarCraft Brood War.
 
 This is a final team project for CSC-568 Artificial Intelligence, created by Bex, Makaila, Fei, Natalie, Arunpreet and Sarah.
