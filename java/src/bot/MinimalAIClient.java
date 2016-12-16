@@ -255,6 +255,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 collectMinerals();
                 collectGas();
                 gasProbeCollect();
+                beingAttacked();
 
                 //branching off into our enemy-specific games
                 if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
@@ -715,6 +716,19 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 //return true since nothing returned false
                 return true;
+        }
+
+        public boolean beingAttacked() {
+            for (Unit  unit : bwapi.getMyUnits()) {
+                if (unit.isUnderAttack()) {
+                    System.out.print("HELP IM BEING ATTACKED");
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            return false;
         }
 
         @Override
