@@ -214,7 +214,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if((supplyUsed/2) >= 22 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core) && totalTrained(UnitTypes.Protoss_Dragoon)<4){
                     buildDrag();
                 }
-                sendDrag();
+                sendDrag(numType(UnitTypes.Protoss_Dragoon));
+                dragHold();
                 dragoonsAttack(totalTrained(UnitTypes.Protoss_Dragoon), 5);
                 //Build Citadel
                 if(mineralCount >= 150 && gasCount >= 100 && numType(UnitTypes.Protoss_Pylon) == 5 && !hasBuild(UnitTypes.Protoss_Citadel_of_Adun)){
@@ -581,19 +582,34 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-        public void sendDrag(){
+        public void sendDrag(int dragoonCounter){
             for(Unit dragoon : bwapi.getMyUnits()){
                 if (dragoon.getType() == UnitTypes.Protoss_Dragoon && dragoon.isIdle()){
-                    positionCounter += 1;
-                    if (positionCounter == 1 || positionCounter == 2){
-                        System.out.println("hold");
-                        dragoon.move(center, false);
-                        dragoon.holdPosition(true);
+                    if (dragoonCounter == 1 || dragoonCounter == 2){
+                        System.out.print("patrollingggggg");
+                        dragoon.patrol(center, false);
                         break;
                     }
-                    else if(positionCounter == 3 ){
-                        dragoon.move(firstChoke, false);
+                    else if(dragoonCounter == 3 ){
+                        System.out.print("patrollingggggg");
+                        dragoon.patrol(firstChoke, false);
                     }
+                    else{
+                        dragoon.patrol(nexus.getPosition(), false);
+                    }
+                }
+            }
+        }
+    /*--------------------------------------------------------------------
+    |  Method dragHold
+    |
+    |  Purpose: Assign the dragoon to hold it's position at the chokepoint.
+    *-------------------------------------------------------------------*/
+        public void dragHold() {
+            for (Unit dragoon : bwapi.getMyUnits()) {
+                if (dragoon.getType() == UnitTypes.Protoss_Dragoon && (dragoon.getPosition() == center || dragoon.getPosition() == firstChoke)) {
+                    System.out.print("HOLD POSITION DRAGOONS");
+                    dragoon.holdPosition(true);
                 }
             }
         }
@@ -671,7 +687,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                 //starts building when it starts to build the x zealot so we need to attack at x+1
                 if (dragoonCounter >= (dragoonAttackCount)) {
                         for (Unit  drag : bwapi.getMyUnits()) {
-                                if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isIdle()) {
+                                if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isUnderAttack()) {
+                                        System.out.print("ATTTTTAAACKKK");
                                         drag.attack(enemyPosition, false);
                                         break;
                                 }
