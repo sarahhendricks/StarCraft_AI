@@ -29,6 +29,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         private Unit poolProbe;
         private Unit gasProbe;
         private Unit gasProbe2;
+        private Unit gasProbe3;
         private Unit nexus;
         private Unit enemyAttack;
         private Unit geyser;
@@ -206,9 +207,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 // 17-19/25 Build gateway
                 if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)<2 && numType(UnitTypes.Protoss_Pylon)>=2){
                     Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
-                    System.out.println("1" + usePosition);
                     Position placeGate = placement(usePosition, 30, 500, 10);
-                    System.out.println("2" + placeGate);
                     buildGateway(placeGate);
                 }
                 // 16-10/17 Train 2 probes (10)
@@ -216,14 +215,47 @@ public class MinimalAIClient implements BWAPIEventListener {
                     buildProbes();
                 }
                 // Build second Pylon at 16/17 supply
-                if((supplyUsed/2) >= 22 && mineralCount >= 100 && numType(UnitTypes.Protoss_Pylon)<3){
+                if((supplyUsed/2) >= 22 && mineralCount >= 100 && numType(UnitTypes.Protoss_Pylon)<4){
                     System.out.println(numType(UnitTypes.Protoss_Pylon));
                     buildPylons(placement(pylonPosition, 100, 800, 50));
                 }
-                // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if((supplyUsed/2) >= 22 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
+                //Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
+                if((supplyUsed/2) >= 22 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core) && totalTrained(UnitTypes.Protoss_Dragoon)<5){
                     buildDrag();
                     sendDrag();
+                }
+                //Build Citadel
+                if(mineralCount >= 150 && gasCount >= 100 && numType(UnitTypes.Protoss_Pylon) == 4 && !hasBuild(UnitTypes.Protoss_Citadel_of_Adun)){
+                    Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
+                    Position placeCitadel = placement(usePosition, 50, 150, 10);
+                    if (placeCitadel != null) {
+                        buildCitadel(placeCitadel);
+                    }
+                    else{
+                        usePosition = findPosition(UnitTypes.Protoss_Pylon, 1);
+                        placeCitadel = placement(usePosition, 50, 150, 10);
+                        if (placeCitadel != null) {
+                            buildCitadel(placeCitadel);
+                        }
+                    }
+                }
+                //Build Templar
+                if(mineralCount >= 150 && gasCount >= 200 && numType(UnitTypes.Protoss_Citadel_of_Adun) == 1){
+                    Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 3);
+                    Position placeTemplar = placement(usePosition, 50, 150, 5);
+                    if (placeTemplar != null){
+                        buildTemplarArchive(placeTemplar);
+                    }
+                    else{
+                        usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
+                        placeTemplar = placement(usePosition, 50, 150, 5);
+                        if (placeTemplar != null){
+                            buildTemplarArchive(placeTemplar);
+                        }
+                    }
+                }
+                if(mineralCount >= 125 && gasCount >= 100 && numType(UnitTypes.Protoss_Templar_Archives) == 1 && numType(UnitTypes.Protoss_Dark_Templar) < 3){
+                    buildTemplar();
                 }
         }
 
@@ -274,7 +306,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 for (Unit unit : bwapi.getMyUnits()) {
                         if (unit.getType() == UnitTypes.Protoss_Probe) {
                                 // You can use referential equality for units, too
-                                if (unit.isIdle() && unit != poolProbe && unit != gasProbe && unit != gasProbe2) {
+                                if (unit.isIdle() && unit != poolProbe && unit != gasProbe && unit != gasProbe2 && unit != gasProbe3) {
                                         for (Unit minerals : bwapi.getNeutralUnits()) {
                                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
@@ -296,13 +328,17 @@ public class MinimalAIClient implements BWAPIEventListener {
             //everyone collect minerals
             if (hasBuild(UnitTypes.Protoss_Assimilator)){
                 for (Unit u : bwapi.getMyUnits()){
-                    if (u.getType() == UnitTypes.Protoss_Probe & u != poolProbe && gasProbe == null){
+                    if (u.getType() == UnitTypes.Protoss_Probe && u != poolProbe && gasProbe == null){
                         u.stop(false);
                         gasProbe = u;
                     }
-                    else if(u.getType() == UnitTypes.Protoss_Probe & u != poolProbe && gasProbe2 == null){
+                    else if(u.getType() == UnitTypes.Protoss_Probe && u != poolProbe && gasProbe2 == null){
                         u.stop(false);
                         gasProbe2 = u;
+                    }
+                    else if(u.getType() == UnitTypes.Protoss_Probe && u != poolProbe && gasProbe3 == null){
+                        u.stop(false);
+                        gasProbe3 = u;
                     }
                 }
             }
@@ -315,7 +351,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void collectGas(){
                 if (hasBuild(UnitTypes.Protoss_Assimilator)) {
                         for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit == gasProbe || unit == gasProbe2) {
+                                if (unit == gasProbe || unit == gasProbe2 || unit ==gasProbe3) {
                                         for (Unit refine : bwapi.getUnits(bwapi.getSelf())) {
                                                 if (refine.getType().isRefinery()) {
                                                         double distance = unit.getDistance(refine);
@@ -430,21 +466,20 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-//        //public void buildCitadel(){
-//            poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
-//        }
+        //Build citadel
+        public void buildCitadel(Position putHere){
+            poolProbe.build(putHere, UnitTypes.Protoss_Citadel_of_Adun);
+        }
 
-        public void buildTemplarArchive(Position archivesPosition) {
-            poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
+        public void buildTemplarArchive(Position putHere) {
+            poolProbe.build(putHere, UnitTypes.Protoss_Templar_Archives);
         }
 
         //function to create dragoons
         public void buildDrag(){
-            for (Unit unit : bwapi.getMyUnits()) {
-              if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                  gateway = unit;
-                  gateway.train(UnitTypes.Protoss_Dragoon);
-              }
+            Unit gateBuild = bestGateway();
+            if (gateBuild != null){
+                gateBuild.train(UnitTypes.Protoss_Dragoon);
             }
         }
 
@@ -481,22 +516,21 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //function to create zealots
         public void buildZealots() {
-            for (Unit unit : bwapi.getMyUnits()) {
-                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                    gateway = unit;
-                    gateway.train(UnitTypes.Protoss_Zealot);
-                    }
-                }
+            Unit gateBuild = bestGateway();
+            if (gateBuild != null){
+                gateBuild.train(UnitTypes.Protoss_Zealot);
+            }
         }
 
         public Unit bestGateway(){
             Unit unitBest = null;
             int check;
-            int max = 0;
+            int max = 3;
             for (Unit unit : bwapi.getMyUnits()) {
                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                     check = unit.getTrainingQueueSize();
-                    if(check > max){
+                    System.out.println(max);
+                    if(check < max){
                         unitBest = unit;
                     }
                 }
@@ -505,15 +539,11 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to create zealots
-        public void buildTemplar( int mineralCount, int gasCount) {
-//                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
-//                        for (Unit unit : bwapi.getMyUnits()) {
-//                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-//                                        gateway = unit;
-//                                        gateway.train(UnitTypes.Protoss_Dark_Templar);
-//                                }
-//                        }
-//                }
+        public void buildTemplar() {
+            Unit gateBuild = bestGateway();
+            if (gateBuild != null){
+                gateBuild.train(UnitTypes.Protoss_Dark_Templar);
+            }
         }
 
         //function trying to find the radius of the pylon
@@ -726,7 +756,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         public boolean beingAttacked() {
             for (Unit  unit : bwapi.getMyUnits()) {
                 if (unit.isUnderAttack()) {
-                    System.out.print("HELP IM BEING ATTACKED");
+                    //System.out.print("HELP IM BEING ATTACKED");
                     return true;
                 }
                 else {
