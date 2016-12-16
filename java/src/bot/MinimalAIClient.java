@@ -62,6 +62,8 @@ public class MinimalAIClient implements BWAPIEventListener {
         Position citadelPosition;
         Position archivesPosition;
         Position forgePosition;
+        Position pylonPosition2;
+        Position pylonPosition3;
         private Set<Player> enemies;
         private RaceType enemy;
 
@@ -112,7 +114,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
 
-                //bwapi.setGameSpeed(0);
+                bwapi.setGameSpeed(0);
 
                 // Determine what race the enemy is.
                 enemies = bwapi.getEnemies();
@@ -161,9 +163,34 @@ public class MinimalAIClient implements BWAPIEventListener {
                 int supplyUsed = bwapi.getSelf().getSupplyUsed();
                 //supply total
                 int supplyTotal = bwapi.getSelf().getSupplyTotal();
-
+                int zealotCounter = 0;
                 int buildOrderNumber = supplyUsed / 2;
 
+                for (Unit u : bwapi.getMyUnits()) {
+                        if(u.getType() == UnitTypes.Protoss_Gateway && u.isCompleted()) {
+                                u.train(UnitTypes.Protoss_Zealot);
+                        }
+                        if (u.getType() == UnitTypes.Protoss_Zealot && u.isCompleted()) {
+                                zealotCounter += 1;
+                                if (zealotCounter > 7) {
+                                        for (Unit zealot : bwapi.getMyUnits()) {
+                                                if (zealot.getType() == UnitTypes.Protoss_Zealot && zealot.isCompleted()) {
+
+                                                        for (Unit enemy : bwapi.getEnemyUnits()) {
+                                                                zealot.attack(enemy.getPosition(), true);
+                                                        }
+                                                }
+
+                                        }
+                                }
+                        }
+                }
+                if (supplyUsed >= supplyTotal-5) {
+                        if (supplyUsed > 20) {
+                                buildPylons(mineralCount,pylonPosition3);
+                        }
+                        buildPylons(mineralCount,pylonPosition2);
+                }
                 // build order
                 collectMinerals();
                 if (buildOrderNumber < 7) {
@@ -247,10 +274,19 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                                 break;
                         case 13:
-                                buildProbes(mineralCount);
+                                if (!buildingExists(UnitTypes.Protoss_Gateway, gatewayPosition)) {
+                                        buildGateway(mineralCount);
+                                }
+                                if (buildingExists(UnitTypes.Protoss_Gateway, gatewayPosition)) {
+                                        buildZealots(mineralCount);
+                                }
                                 break;
-                        case 14:
-                                
+                        default:
+                                if (hasGateway) {
+                                        buildZealots(mineralCount);
+                                } else {
+                                        buildProbes(mineralCount);
+                                }
                 }
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
@@ -539,6 +575,8 @@ public class MinimalAIClient implements BWAPIEventListener {
                 citadelPosition = new Position(xBuild+90, yBuild-50);
                 archivesPosition = new Position(xBuild-80, yBuild+40);
                 forgePosition = new Position(xBuild-120, yBuild-50);
+                pylonPosition2 = new Position(xBuild + 200, yBuild);
+                pylonPosition3 = new Position(xBuild + 300, yBuild);
 
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
                 bwapi.drawCircle(gatewayPosition, 8, BWColor.Green, true, false);
@@ -546,6 +584,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.drawCircle(citadelPosition, 8, BWColor.Orange, true, false);
                 bwapi.drawCircle(archivesPosition, 8, BWColor.Purple, true, false);
                 bwapi.drawCircle(forgePosition, 8, BWColor.Red, true, false);
+                bwapi.drawCircle(pylonPosition2, 8, BWColor.Cyan, true, false);
+
+                bwapi.drawCircle(pylonPosition3, 8, BWColor.Red, true, false);
                 //we dont want to create pylons too close to minerals, check the positioning of the mineral do avoid building in front of minerals
                 //nexusPosition = nexus.getPosition();
 
