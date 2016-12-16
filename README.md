@@ -6,8 +6,8 @@ This is a final team project for CSC-568 Artificial Intelligence, created by Bex
 ## Project requirements:
 All deliverables should be available on GitHub. Required deliverables include:
  - Code that is clean, documented, and has appropriate class decomposition.
- - High-level overview of your approach (ballpark of 500 words in the README in the base of your repository).
- - Technical summary of your agent including a system diagram, explanation of all major classes, and a time-based guide as to what the agent does over time (also in the README).
+ - High-level overview of your approach
+ - Explanation of all major classes, and a time-based guide as to what the agent does over time.
 
 ## High Level Overview
 At a very high level, the goal of our agent is to survive through the early game and into mid-late game at which point we would begin our offensive. We have two different build orders with rather different strategies. Our main approach was the creation of different functions to build buildings, units, and to attack depending on what point in the game we were. We then organized those functions based on how many units we had room for and what other buildings had been completed in order to follow our build order. 
@@ -15,57 +15,44 @@ At a very high level, the goal of our agent is to survive through the early game
 In our Protoss vs. Protoss/Terran matchup, our priority was following our build order in order to achieve the tier two units we desired, Dark Templars. In the beginning of the game we have all of units harvesting minerals and building more probes until we build our first pylon. Then we build and assimilator and start collecting gas. From there we build our first gateway and start warping in zealots. Then we build a cybernetics core  and then a citadel so that we can build our Templar Archives to begin creation of Dark Templars, whilst creating more Zealots and some Dragoons along the way. Our end goal is to then attack the enemy’s base with our Dark Templars since they are invisible units and destroy their base and win!
 
 ## Code Structure
- One of our overarching goals in the project, was to divide our build paths into a decision tree based on the enemy which we were fighting. Our goal for the code base, was to keep the majority of `matchFrame()` clear of actual code and mainly filled with function calls.
- Therefore our major functions revolve around creation of buildings and units. They are as follows:
+One of our overarching goals in the project, was to divide our build paths into a decision tree based on the enemy which we were fighting. Our goal for the code base, was to keep the majority of `matchFrame()` clear of actual code and mainly filled with function calls.
+Therefore our major functions revolve around creation of buildings and units. They are as follows:
+ - `protossVsPT` and `protossVsZerg` - Match frame branch splits on the opponent. This is the implementation of our build orders 
  - `collectMinerals` - Occurs throughout the games and has all non-assigned probes collect minerals
  - `collectGas` - Checks for the creation of an Assimilator (refinery) and if one such exists, assigns the gasProbe to harvest gas
- - `buildProbes` - Creates Probes, mainly used at the beginning of the game, but used throughout the build order
- - `buildPylons` - Builds Pylons based on positioning functions
- - `buildGateway` - Builds a Gateway based on positioning functions around a Pylon
- - `buildCyber` - Builds a Cybernetics Core
- - `buildCitadel` - Builds a Citadel
- - `buildTemplarArchive` - Builds a Templar Archive
- - `buildDrag` - Builds Dragoons
- - `buildZealots` - Builds Zealots
- - `pylonRadius` - Checks if buildings are within the region of a Pylon
+ - `gasProbeCollect` - All of the pre-assigned gas probes switch from mineral to gas collecting
+ - Our build functions: `buildProbes`, `buildPylons`, `buildGateway`, `buildCyber`, `buildCitadel`, `buildTemplarArchive`, `buildDrag`, `buildZealots`
+ - `numType` - Counts the number of a specific type of unit.
+ - `hasBuild` - Checks if a building has been initiated
+ - `firstPylonPosition` - Hard code the first pylon position
  - `placement` - Spiral around pylons to the check for closest buildable positions
  - `checkSpot` - Check the radiuses of each checkposition in placement function
+ 
+## General Protoss V Protoss/Terran Timeline
+The build order for Protoss V Protoss/Terran begines by building more probes and the initial pylon. After the first pylon the gateway and assimilator ar built. Along with this the production of zealots begins. After gas has begun to be collected the cybernetic core is built and multiple pylons are built. The zealots are then sent to attack and a second gateway is built. Then the production of dragoons begins and a citadel is built. During this time the zealots and dragoons are attacking and patrolling. As they are killed more will be produced based on the gateway with the smaller queue. Finally a Templar Archives is built and the Dark Templar is warped in. The Dark Templar is sent to attack and the production of zealots and dragoons continues until victory or failure.
 
 ## Protoss V Protoss/Terran Build Order
- - 4-8 / 9 - Build 4 probes
- - 1 building
- - 1 mineral
- - 2 gas
+ - 4-8 / 9 - Build 4 probes (1 building, 3 gas)
  - 8 / 9 - Pylon (built by gas probe1)
- - 8-10 / 17 - Build 2 probes
  - 10 / 17 - Gateway (built by build probe)
- - 10-12/17 - Make 2 zealots
- - 12 / 17 - Assimilator (built by build probe)
- - 12-14/17 - Make 2 zealots
+ - 10-14 / 9 - Build 4 probes (1 building, 3 gas)
+ - 10 / 17 - Assimilator (built by build probe)
+ - 12-14/17 - Make 4 zealots
  - 14 / 17 - Cybernetics Core
- - 14-16/17 - Make 2 probes
- - 1 gas
- - 1 mineral
- - 16 / 17  - Pylon (built by build probe)
- - 17-19 / 25 -  Make 2 zealots
- - When zealot counter = 6 Attack with 6 zealots
- - 17-19 /25 -  Build gateway (built by build probe)
- - 19-24/25 - Build 5 mineral probes
- - 20-24 / 25 - Pylon (built by build probe)
- - 24-32/ 33 - Build 4 dragoons
- - 24-32 / 33 - Citadel (built by build probe)
- - Attack with 4 dragoons
- - 24 / 33 - Pylon (built by build probe)
- - 32-36 - Build 2 dragoons
+ - 14-16/17 - Make 2 probes (1 gas, 1 mineral)
+ - 16 / 17  - 3 Pylons (built by build probe)
+ - 17-19 / 41 -  Make 2 zealots
+ - Attack with zealots
+ - 17-19 /41 -  Build gateway (built by build probe)
+ - 19-24/41 - Build 5 mineral probes
+ - 20-24 / 41 - Pylon (built by build probe)
+ - 24-32/ 41 - Build 4 dragoons
+ - 24-32 / 41 - Citadel (built by build probe)
+ - 32-36 / 41 - Build dragoons
  - Attack with 2 dragoons
  - 32-36/41 - Build Templar Archives
  - 36/41 - Dark Templars
  - Attack with dark templar
- - 38-41/41 - Pylon
- - 41-45/49 - Build 2 dragoons
- - 45-49/49 - Build 2 dark templars
- - Attack with 2 dragoons and 2 dark templars
- - If still alive repeat Pylon and build 4 dragoons….
 
 ## Protoss V Zerg Build Order
  - Forge Fast Expand:
