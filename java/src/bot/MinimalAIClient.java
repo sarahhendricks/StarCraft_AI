@@ -56,19 +56,19 @@ public class MinimalAIClient implements BWAPIEventListener {
         Region baseRegion;
 
         //booleans to check if a building exists
-        boolean hasAssimilator = false;
-        boolean hasGateway = false;
-        boolean hasCyber = false;
-        boolean hasCitadel = false;
-        boolean hasArchives = false;
+        //boolean hasAssimilator = false;
+        //boolean hasGateway = false;
+        //boolean hasCyber = false;
+        //boolean hasCitadel = false;
+        //boolean hasArchives = false;
 
         //positioning for buildings
         Position pylonPosition;
-        Position gatewayPosition;
-        Position cyberPosition;
+        //Position gatewayPosition;
+        //Position cyberPosition;
         Position buildPosition;
-        Position citadelPosition;
-        Position archivesPosition;
+        //Position citadelPosition;
+        //Position archivesPosition;
         private Set<Player> enemies;
         private RaceType enemy;
 
@@ -113,10 +113,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 nexus = u;
                         } else if (u.getType() == UnitTypes.Protoss_Probe && poolProbe == null) {
                                 poolProbe = u;
-                        } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe == null) {
-                                gasProbe = u;
-                        } else if (u.getType() == UnitTypes.Protoss_Probe && gasProbe2 == null) {
-                                gasProbe2 = u;
                         }
                 }
                 /*for (Unit attackUnits : bwapi.getMyUnits()){
@@ -165,42 +161,63 @@ public class MinimalAIClient implements BWAPIEventListener {
          *
          */
         private void protossVsPT(){
-                // Build Probes
+                // 4-8/9 Train Probes (8)
                 if((supplyUsed/2) < 8 && mineralCount >=50){
                     buildProbes();
                 }
-                // Build a pylon at 8/9 supply && 100 minerals
+                // 8/9 Build a pylon
                 if((supplyUsed/2) == 8 && mineralCount >= UnitTypes.Protoss_Pylon.getMineralPrice()){
                     buildPylons(pylonPosition);
                 }
-                // Keep building probes
-                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && numProbes() <14){
+                // 8-10/17 Train 2 probes (10)
+                if((supplyTotal/2) > 9 && (supplyUsed/2) < 12 && mineralCount >= 50 && numProbes() <11){
                     buildProbes();
                 }
-                // Gateway at 12/17 supply 150 minerals
-                if((supplyUsed/2) >= 12 && mineralCount >= 150 && !hasBuild(UnitTypes.Protoss_Gateway)){
-                    gatewayPosition = placement(40, 80, 5);
-                    buildGateway();
+                // 10/17 Build gateway
+                if((supplyUsed/2) >= 10 && mineralCount >= 150 && !hasBuild(UnitTypes.Protoss_Gateway)){
+                    System.out.println("gate1");
+                    Position putPosition = placement(pylonPosition, 40, 80, 5);
+                    buildGateway(putPosition);
                 }
-                // Assimilator at 13/17 supply and 100 minerals
-                if((supplyUsed/2) >= 13 && mineralCount >= 100 && !hasBuild(UnitTypes.Protoss_Assimilator) && hasBuild(UnitTypes.Protoss_Gateway)){
+                // 12-16/17 Train 4 zealots (4)
+                if((supplyUsed/2) >= 10 && mineralCount >= 100 && numZealot() < 4 && hasBuild(UnitTypes.Protoss_Gateway)){
+                    buildZealots();
+                }
+                // 12/17 Build assimilator
+                if((supplyUsed/2) >= 12 && mineralCount >= 100 && !hasBuild(UnitTypes.Protoss_Assimilator) && hasBuild(UnitTypes.Protoss_Gateway)){
                         buildAssimilator();
                 }
                 // collect gas
                 collectGas();
-                // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if((supplyUsed/2) >= 14 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
-                        buildDrag();
+                // 14/17 Build Cyber Core
+                if((supplyUsed/2) >= 12 && mineralCount >= 200 && !hasBuild(UnitTypes.Protoss_Cybernetics_Core) && hasBuild(UnitTypes.Protoss_Assimilator)){
+                    Position putPosition = placement(pylonPosition, 60, 160, 20);
+                    buildCyber(putPosition);
                 }
-                // Build Cyber Core at 15/17 supply && 200 minerals
-                if((supplyUsed/2) >= 14 && mineralCount >= 200 && !hasBuild(UnitTypes.Protoss_Cybernetics_Core) && hasBuild(UnitTypes.Protoss_Assimilator)){
-                        cyberPosition = placement(60, 160, 20);
-                        buildCyber();
+                //14-16/17 Make 2 Probes (12)
+                if((supplyTotal/2) >= 17 && (supplyUsed/2) < 16 && mineralCount >= 50 && numProbes() <13){
+                    buildProbes();
                 }
+//                // Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
+//                if((supplyUsed/2) >= 14 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
+//                        buildDrag();
+//                }
                 // Build second Pylon at 16/17 supply
-                 if((supplyUsed/2) >= 15 && mineralCount >= 100 && !(numType(UnitTypes.Protoss_Pylon)==2)){
-                        buildPylons(placement(300, 700, 50));
+                 if((supplyUsed/2) >= 15 && mineralCount >= 100 && !(numType(UnitTypes.Protoss_Pylon)==2) && hasBuild(UnitTypes.Protoss_Cybernetics_Core)){
+                     buildPylons(placement(pylonPosition, 200, 700, 50));
                  }
+                // 17-19/25 Train 2 zealots (6)
+                if((supplyUsed/2) >= 10 && mineralCount >= 100 && numZealot() < 6 && hasBuild(UnitTypes.Protoss_Gateway)){
+                    buildZealots();
+                }
+                // 17-19/25 Build gateway
+                if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)<2 && numType(UnitTypes.Protoss_Pylon)==2){
+                    Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
+                    System.out.println("1" + usePosition);
+                    Position placeGate = placement(usePosition, 40, 100, 5);
+                    System.out.println("2" + placeGate);
+                    buildGateway(placeGate);
+                }
         }
 
         /*
@@ -233,6 +250,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
                 collectMinerals();
                 collectGas();
+                gasProbeCollect();
 
                 //branching off into our enemy-specific games
                 if ((enemy == RaceType.RaceTypes.Protoss) || (enemy == RaceType.RaceTypes.Terran)) {
@@ -267,9 +285,29 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
+        //a function to talk to gas probe
+        public void gasProbeCollect(){
+            //everyone collect minerals
+            if (hasBuild(UnitTypes.Protoss_Assimilator)){
+                for (Unit u : bwapi.getMyUnits()){
+                    if (u.getType() == UnitTypes.Protoss_Probe & u != poolProbe && gasProbe == null){
+                        u.stop(false);
+                        gasProbe = u;
+                    }
+                    else if(u.getType() == UnitTypes.Protoss_Probe & u != poolProbe && gasProbe2 == null){
+                        u.stop(false);
+                        gasProbe2 = u;
+                    }
+                }
+            }
+            else{
+                collectMinerals();
+            }
+        }
+
         // a Function to collect Gas
         public void collectGas(){
-                if (hasAssimilator) {
+                if (hasBuild(UnitTypes.Protoss_Assimilator)) {
                         for (Unit unit : bwapi.getMyUnits()) {
                                 if (unit == gasProbe || unit == gasProbe2) {
                                         for (Unit refine : bwapi.getUnits(bwapi.getSelf())) {
@@ -290,7 +328,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         //a function to build the assimilator
         public void buildAssimilator(){
-                if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
+                if (poolProbe != null && !hasBuild(UnitTypes.Protoss_Assimilator) && mineralCount >= 100) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
                                 // Get the geyser that's in our base.
                                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -304,7 +342,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 poolProbe.build(geyserPosition, UnitTypes.Protoss_Assimilator);
                                 // The below is not good enough logic to ensure a building is actually being constructed.
                                 // you should make sure you have an assmilitor in construction before changing hasAssimilator
-                                hasAssimilator = true;
                         }
                 }
                 for (Unit u : bwapi.getAllUnits()) {
@@ -338,6 +375,21 @@ public class MinimalAIClient implements BWAPIEventListener {
             poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
         }
 
+        public Position findPosition(UnitType testType, int index){
+            int count = 0;
+            for (Unit u : bwapi.getMyUnits()) {
+                if (u.getType() == testType) {
+                    System.out.println(index);
+                    count += 1;
+                    if (count == index){
+                        System.out.println(u.getPosition());
+                        return u.getPosition();
+                    }
+                }
+            }
+            return null;
+        }
+
         public int numType(UnitType testType){
             int count = 0;
             for (Unit u : bwapi.getMyUnits()) {
@@ -358,22 +410,20 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to create a gateway
-        public void buildGateway(){
-            poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
+        public void buildGateway(Position putHere){
+            poolProbe.build(putHere, UnitTypes.Protoss_Gateway);
         }
 
         //function to create a cybernetics core
-        public void buildCyber(){
+        public void buildCyber(Position putHere){
             for (Unit u : bwapi.getMyUnits()){
                 if(u.getType() == UnitTypes.Protoss_Gateway){
                     if (u.isCompleted()){
                         //if the gateway has been built then try to build
-                        hasGateway = true;
-                        poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
+                        poolProbe.build(putHere, UnitTypes.Protoss_Cybernetics_Core);
                         //if started cybernetic core then mark tru
                         for (Unit j : bwapi.getMyUnits()) {
                             if (j.getType() == UnitTypes.Protoss_Cybernetics_Core) {
-                                hasCyber = true;
                             }
                         }
                     }
@@ -386,7 +436,7 @@ public class MinimalAIClient implements BWAPIEventListener {
 //            poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
 //        }
 
-        public void buildTemplarArchive() {
+        public void buildTemplarArchive(Position archivesPosition) {
             poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
         }
 
@@ -401,34 +451,44 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         //function to create zealots
-        public void buildZealots(int mineralCount, int zealotQueue, int zealotCounter) {
+        public void buildZealots() {
             for (Unit unit : bwapi.getMyUnits()) {
                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                     gateway = unit;
                     //getting the size of the gateway warp queue
-                    zealotQueue = gateway.getTrainingQueueSize();
-                //zealotCounter not working
-                    if (hasGateway && mineralCount > 100 && zealotQueue < 5 && zealotCounter <= 2) {
-                        if(zealotCounter == 3 && zealotQueue != 0){
-                            //cancel the remaining warp
-                            System.out.print("cancel warp");
-                        }
+                    //zealotQueue = gateway.getTrainingQueueSize();
+                    //zealotCounter not working
+                    //if (mineralCount > 100 && numZealot() <= 2) {
+//                        if(zealotCounter == 3 && zealotQueue != 0){
+//                            //cancel the remaining warp
+//                            System.out.print("cancel warp");
+//                        }
                         gateway.train(UnitTypes.Protoss_Zealot);
-                    }
+                    //}
                 }
             }
         }
 
+        public int numZealot(){
+            int q = 0;
+            for (Unit unit : bwapi.getMyUnits()) {
+                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+                    q = unit.getTrainingQueueSize();
+                }
+            }
+            return (q + numType(UnitTypes.Protoss_Zealot));
+        }
+
         //function to create zealots
         public void buildTemplar( int mineralCount, int gasCount) {
-                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
-                        for (Unit unit : bwapi.getMyUnits()) {
-                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
-                                        gateway = unit;
-                                        gateway.train(UnitTypes.Protoss_Dark_Templar);
-                                }
-                        }
-                }
+//                if (hasGateway && hasCitadel && hasArchives && mineralCount > 125 && gasCount > 100) {
+//                        for (Unit unit : bwapi.getMyUnits()) {
+//                                if (unit.getType() == UnitTypes.Protoss_Gateway) {
+//                                        gateway = unit;
+//                                        gateway.train(UnitTypes.Protoss_Dark_Templar);
+//                                }
+//                        }
+//                }
         }
 
         //function trying to find the radius of the pylon
@@ -531,9 +591,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
         }
 
-        public Position placement(int start, int max, int inc) {
-            int checkPointX = pylonPosition.getX(Position.PosType.PIXEL);
-            int checkPointY = pylonPosition.getY(Position.PosType.PIXEL);
+        public Position placement(Position start, int radius, int max, int inc) {
+            int checkPointX = start.getX(Position.PosType.PIXEL);
+            int checkPointY = start.getY(Position.PosType.PIXEL);
             Position checkPosition1;
             Position checkPosition2;
             Position checkPosition3;
@@ -544,8 +604,8 @@ public class MinimalAIClient implements BWAPIEventListener {
             Position checkPosition8;
 
             buildPosition = null;
-                for (int x_offset = start; x_offset < max; x_offset += inc) {
-                        for (int y_offset = start; y_offset <= (max); y_offset += inc) {
+                for (int x_offset = radius; x_offset < max; x_offset += inc) {
+                        for (int y_offset = radius; y_offset <= (max); y_offset += inc) {
                                 checkPosition1 = new Position(checkPointX + x_offset, checkPointY + y_offset);
                                 checkPosition2 = new Position(checkPointX + x_offset, checkPointY - y_offset);
                                 checkPosition3 = new Position(checkPointX - x_offset, checkPointY + y_offset);
@@ -560,6 +620,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
                                                 bwapi.drawCircle(checkPosition1, 3, BWColor.Yellow, true, false);
                                                 buildPosition = checkPosition1;
+                                                System.out.println("Check Position = " + checkPosition1);
                                                 break;
                                         }
                                 }
@@ -617,7 +678,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         break;
                         }
                 }
-                //System.out.println("Build Position = " + buildPosition);
+                System.out.println("Build Position = " + buildPosition);
                 return buildPosition;
         }
 
