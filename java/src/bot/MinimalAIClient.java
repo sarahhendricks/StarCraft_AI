@@ -15,7 +15,7 @@ import jnibwapi.util.BWColor;
 /*--------------------------------------------------------------------
 |  Class MinimalAIClient
 |
-|  Purpose: implementation of all of our more detailed
+|  Purpose: Implementation of all of our more detailed
 |  method documentation. It is the main class that wraps all of  
 |  specific methods and guides our AI agent in playing StarCraft. 
 *-------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ public class MinimalAIClient implements BWAPIEventListener {
     /*--------------------------------------------------------------------
     |  Method main
     |
-    |  Purpose: main method
+    |  Purpose: Main method that runs our StarCraft bot.
     *-------------------------------------------------------------------*/
     public static void main(String[] args) {
             new MinimalAIClient();
@@ -455,8 +455,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         /*--------------------------------------------------------------------
         |  Method totalTrained
         |
-        |  Purpose:
-        |  Parameter: typeCheck -
+        |  Purpose: The total number of units that we are training and are in
+        |      the queue.
+        |  Parameter: typeCheck - A UnitType passed in for checking.
         *-------------------------------------------------------------------*/
         public int totalTrained(UnitType typeCheck){
             int q = 0;
@@ -478,13 +479,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         public void buildPylons(Position pylonPosition){
             poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
         }
-
+    
         /*--------------------------------------------------------------------
         |  Method findPosition
         |
-        |  Purpose: Sends the worker probe to build a pylon.
-        |  Parameter: testType -
-        |       index -
+        |  Purpose: When we have more than one of the same unit especially
+        |       buildings, the function allows us to differentiate between
+        |       each one and find the one that we need.
+        |  Parameter: testType - A UnitType that we are passing into the
+        |       function for checking.
+        |       index - Which one of the same unit that we are looking for.
         *-------------------------------------------------------------------*/
         public Position findPosition(UnitType testType, int index){
             int count = 0;
@@ -626,7 +630,10 @@ public class MinimalAIClient implements BWAPIEventListener {
         /*--------------------------------------------------------------------
         |  Method sendDrag
         |
-        |  Purpose:
+        |  Purpose: Send first three dragoons to patrol around the chokepoint, 
+        |      and then send the rest of the dragoons to patrol around our nexus.
+        |  Parameter: dragoonCounter: The number of dragoon we have including
+        |      the one that is in trining.
         *-------------------------------------------------------------------*/
         public void sendDrag(int dragoonCounter){
             for(Unit dragoon : bwapi.getMyUnits()){
@@ -644,11 +651,11 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
             }
         }
-    /*--------------------------------------------------------------------
-    |  Method dragHold
-    |
-    |  Purpose: Assign the dragoon to hold it's position at the chokepoint.
-    *-------------------------------------------------------------------*/
+        /*--------------------------------------------------------------------
+        |  Method dragHold
+        |
+        |  Purpose: Assign the dragoon to hold it's position at the chokepoint.
+        *-------------------------------------------------------------------*/
         public void dragHold() {
             for (Unit dragoon : bwapi.getMyUnits()) {
                 if (dragoon.getType() == UnitTypes.Protoss_Dragoon && (dragoon.getPosition() == center || dragoon.getPosition() == firstChoke)) {
@@ -673,7 +680,7 @@ public class MinimalAIClient implements BWAPIEventListener {
         |  Method bestGateway
         |
         |  Purpose: Compare the gateways and find the one with the smaller queue.
-        |           max at three so then all of the resources aren't used
+        |           max at three so then all of the resources aren't used.
         *-------------------------------------------------------------------*/
         public Unit bestGateway(){
             Unit unitBest = null;
@@ -705,11 +712,13 @@ public class MinimalAIClient implements BWAPIEventListener {
         /*--------------------------------------------------------------------
         |  Method zealotsAttack
         |
-        |  Purpose: making all of the zealots attack once we hit a threshold
+        |  Purpose: Making all of the zealots attack once we hit a threshold
         |      count of the zealots, zealots will sit idle until that number
-        |      is reached
-        |  Parameter: zealotCounter -
-        |       zealotAttackCount -
+        |      is reached.
+        |  Parameter: zealotCounter - The amount of zealots that we have
+        |      initialized training.
+        |      zealotAttackCount - The threshold count of zealots before we
+        |      decide to attack.
         *-------------------------------------------------------------------*/
         public void zealotsAttack(int zealotCounter, int zealotAttackCount ) {
                 for (Unit u : bwapi.getEnemyUnits()) {
@@ -726,14 +735,16 @@ public class MinimalAIClient implements BWAPIEventListener {
                         }
                 }
         }
-
+    
         /*--------------------------------------------------------------------
         |  Method dragoonsAttack
         |
         |  Purpose: making all of the dragoons attack once we hit a threshold
         |       count of the dragoons
-        |  Parameter: dragoonCounter -
-        |       dragoonAttackCount -
+        |  Parameter: dragoonCounter - The number of dragoons that we have
+        |       initialized training.
+        |       dragoonAttackCount - The threshold count of zealots before we
+        |       decide to attack.
         *-------------------------------------------------------------------*/
         public void dragoonsAttack(int dragoonCounter, int dragoonAttackCount) {
                 for (Unit u : bwapi.getEnemyUnits()) {
@@ -757,8 +768,10 @@ public class MinimalAIClient implements BWAPIEventListener {
         |
         |  Purpose: making all of the templars attack once we hit a threshold
         |       count of the templars
-        |  Parameter: templarCounter -
-        |       templarAttackCount -
+        |  Parameter: templarCounter - The number of Dark Templars that we
+        |       have initialized training.
+        |       templarAttackCount - The threshold count of Templars before we
+        |      decide to attack.
         *-------------------------------------------------------------------*/
         public void templarAttack(int templarCounter, int templarAttackCount ) {
             for (Unit u : bwapi.getEnemyUnits()) {
@@ -980,7 +993,9 @@ public class MinimalAIClient implements BWAPIEventListener {
         /*--------------------------------------------------------------------
         |  Method beingAttacked
         |
-        |  Purpose:
+        |  Purpose: Determine if we are under attack at the home base.
+        |  Return: true - We are under attack.
+        |      false - We are not under attack.
         *-------------------------------------------------------------------*/
         public boolean beingAttacked() {
             for (Unit  unit : bwapi.getMyUnits()) {
