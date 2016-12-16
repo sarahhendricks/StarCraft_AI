@@ -242,10 +242,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
                                         buildPhotonCannon(mineralCount, archivesPosition);
                                 }
-                                if (buildingExists(UnitTypes.Protoss_Photon_Cannon, gatewayPosition)) {
-                                        buildGateway(mineralCount);
+                                if (buildingExists(UnitTypes.Protoss_Photon_Cannon, archivesPosition)) {
+                                        buildProbes(mineralCount);
                                 }
-                                buildZealots(mineralCount);
                                 break;
                         case 13:
                                 buildProbes(mineralCount);
