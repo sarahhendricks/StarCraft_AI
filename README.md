@@ -27,6 +27,11 @@ Therefore our major functions revolve around creation of buildings and units. Th
  - `firstPylonPosition` - Hard code the first pylon position
  - `placement` - Spiral around pylons to the check for closest buildable positions
  - `checkSpot` - Check the radiuses of each checkposition in placement function
+ - `bestGateway` - Compare the gateways and find the one with the smaller queue size.
+ - `zealotAttack`, `dragoonAttack`, `templarAttack` - Send these units to attack once we hit a threshold count of units.
+ - `bingAttacked` - Determine if our units are under attack.
+ - `bestGateway` - Compare the gateways and find the one with the smaller queue size.
+ - `findChockPoint` - Find the nearest choke point around our base.
  
 ## General Protoss V Protoss/Terran Timeline
 The build order for Protoss V Protoss/Terran begines by building more probes and the initial pylon. After the first pylon the gateway and assimilator ar built. Along with this the production of zealots begins. After gas has begun to be collected the cybernetic core is built and multiple pylons are built. The zealots are then sent to attack and a second gateway is built. Then the production of dragoons begins and a citadel is built. During this time the zealots and dragoons are attacking and patrolling. As they are killed more will be produced based on the gateway with the smaller queue. Finally a Templar Archives is built and the Dark Templar is warped in. The Dark Templar is sent to attack and the production of zealots and dragoons continues until victory or failure.
