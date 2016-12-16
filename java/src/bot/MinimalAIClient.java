@@ -49,6 +49,7 @@ public class MinimalAIClient implements BWAPIEventListener {
     //the attackCount is the number of units we plan to send to attack the enemy at a given time
         private int dragoonAttackCount = 6;
         private int zealotAttackCount = 6;
+        private int positionCounter =0;
 
     //Queues for the buildings
          private int zealotQueue = 0;
@@ -106,16 +107,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 poolProbe = u;
                         }
                 }
-                /*for (Unit attackUnits : bwapi.getMyUnits()){
-                        if (attackUnits.getType() == UnitTypes.Protoss_Zealot && zealots == null) {
-                                zealots = attackUnits;
-                        }
-                }*/
-
-             /*  for (Unit u : bwapi.getEnemyUnits()) {
-                        enemyAttack = u;
-                        enemyPosition = u.getPosition();
-                */
                 for (Unit u : bwapi.getNeutralUnits()) {
                         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
                         if (u.getType().isMineralField() && bwapi.getMap().getRegion(u.getPosition()) == baseRegion) {
@@ -171,9 +162,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 // 10/17 Build gateway
                 if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)==0){
                     Position putPosition = placement(pylonPosition, 10, 400, 5);
-                    //System.out.println(pylonPosition);
                     bwapi.drawCircle(putPosition, 8, BWColor.Yellow, true, false);
-                    System.out.println(putPosition);
                     buildGateway(putPosition);
                 }
                 // 12-16/17 Train 2 zealots (2)
@@ -182,7 +171,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 // 12/17 Build assimilator
                 if((supplyUsed/2) >= 12 && mineralCount >= 100 && !hasBuild(UnitTypes.Protoss_Assimilator) && hasBuild(UnitTypes.Protoss_Gateway)){
-                        buildAssimilator();
+                    buildAssimilator();
                 }
                 // collect gas
                 collectGas();
@@ -200,12 +189,11 @@ public class MinimalAIClient implements BWAPIEventListener {
                      buildPylons(placement(pylonPosition, 200, 700, 50));
                  }
                 // 17-19/25 Train 2 zealots (6)
-                if((supplyUsed/2) >= 10 && mineralCount >= 100 && totalTrained(UnitTypes.Protoss_Zealot) < 6 && hasBuild(UnitTypes.Protoss_Gateway)){
+                if((supplyUsed/2) >= 10 && mineralCount >= 100 && totalTrained(UnitTypes.Protoss_Zealot) < 2 && hasBuild(UnitTypes.Protoss_Gateway)){
                     buildZealots();
                 }
                 //6 zealots, go attack
                 if((supplyUsed/2) >= 25 && totalTrained(UnitTypes.Protoss_Zealot)==6){
-                    //System.out.println("Z");
                     zealotsAttack(totalTrained(UnitTypes.Protoss_Zealot), 6);
                 }
                 // 17-19/25 Build gateway
@@ -219,40 +207,44 @@ public class MinimalAIClient implements BWAPIEventListener {
                     buildProbes();
                 }
                 // Build second Pylon at 16/17 supply
-                if((supplyUsed/2) >= 22 && mineralCount >= 100 && numType(UnitTypes.Protoss_Pylon)<4){
-                    System.out.println(numType(UnitTypes.Protoss_Pylon));
-                    buildPylons(placement(pylonPosition, 100, 800, 50));
+                if((supplyUsed/2) >= 22 && mineralCount >= 100 && numType(UnitTypes.Protoss_Pylon)<5){
+                    buildPylons(placement(pylonPosition, 200, 800, 50));
                 }
                 //Build Dragoon at Gateway at 15/17 supply at 125 minerals and 50 gas
-                if((supplyUsed/2) >= 22 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core) && totalTrained(UnitTypes.Protoss_Dragoon)<5){
+                if((supplyUsed/2) >= 22 && mineralCount >= 125 && gasCount >= 50 && hasBuild(UnitTypes.Protoss_Cybernetics_Core) && totalTrained(UnitTypes.Protoss_Dragoon)<4){
                     buildDrag();
-                    sendDrag();
                 }
+                sendDrag();
+                dragoonsAttack(totalTrained(UnitTypes.Protoss_Dragoon), 5);
                 //Build Citadel
-                if(mineralCount >= 150 && gasCount >= 100 && numType(UnitTypes.Protoss_Pylon) == 4 && !hasBuild(UnitTypes.Protoss_Citadel_of_Adun)){
+                if(mineralCount >= 150 && gasCount >= 100 && numType(UnitTypes.Protoss_Pylon) == 5 && !hasBuild(UnitTypes.Protoss_Citadel_of_Adun)){
                     Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
-                    Position placeCitadel = placement(usePosition, 50, 150, 10);
+                    Position placeCitadel = placement(usePosition, 50, 120, 10);
                     if (placeCitadel != null) {
                         buildCitadel(placeCitadel);
                     }
                     else{
                         usePosition = findPosition(UnitTypes.Protoss_Pylon, 1);
-                        placeCitadel = placement(usePosition, 50, 150, 10);
+                        placeCitadel = placement(usePosition, 50, 120, 10);
                         if (placeCitadel != null) {
                             buildCitadel(placeCitadel);
                         }
                     }
                 }
+                // Train 4 probes after Citadel
+                if((supplyTotal/2) >= 18 && mineralCount >= 50 && totalTrained(UnitTypes.Protoss_Probe) <23 && hasBuild(UnitTypes.Protoss_Citadel_of_Adun)){
+                    buildProbes();
+                }
                 //Build Templar
-                if(mineralCount >= 150 && gasCount >= 200 && numType(UnitTypes.Protoss_Citadel_of_Adun) == 1 && numType(UnitTypes.Protoss_Templar_Archives) < 1){
+                if(mineralCount >= 150 && gasCount >= 200 && numType(UnitTypes.Protoss_Citadel_of_Adun) == 1 && !hasBuild(UnitTypes.Protoss_Templar_Archives)){
                     Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 3);
-                    Position placeTemplar = placement(usePosition, 50, 150, 5);
+                    Position placeTemplar = placement(usePosition, 50, 120, 5);
                     if (placeTemplar != null){
                         buildTemplarArchive(placeTemplar);
                     }
                     else{
                         usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
-                        placeTemplar = placement(usePosition, 50, 150, 5);
+                        placeTemplar = placement(usePosition, 50, 120, 5);
                         if (placeTemplar != null){
                             buildTemplarArchive(placeTemplar);
                         }
@@ -260,6 +252,9 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 if(mineralCount >= 125 && gasCount >= 100 && numType(UnitTypes.Protoss_Templar_Archives) == 1 && numType(UnitTypes.Protoss_Dark_Templar) < 3){
                     buildTemplar();
+                }
+                if(numType(UnitTypes.Protoss_Dark_Templar) > 0){
+                    templarAttack(1, 1);
                 }
         }
 
@@ -328,7 +323,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                                 if (minerals.getType().isMineralField() && bwapi.getMap().getRegion(minerals.getPosition()) == baseRegion) {
                                                         double distance = unit.getDistance(minerals);
                                                         if (distance < 300) {
-                                                                unit.rightClick(minerals, false);
+                                                                unit.gather(minerals, false);
                                                                 //claimedMinerals.add(minerals);
                                                                 break;
                                                         }
@@ -587,16 +582,16 @@ public class MinimalAIClient implements BWAPIEventListener {
         }
 
         public void sendDrag(){
-            int positionCounter = 0;
             for(Unit dragoon : bwapi.getMyUnits()){
                 if (dragoon.getType() == UnitTypes.Protoss_Dragoon && dragoon.isIdle()){
-                    positionCounter ++;
-                    if (positionCounter % 3 ==0){
+                    positionCounter += 1;
+                    if (positionCounter == 1 || positionCounter == 2){
+                        System.out.println("hold");
                         dragoon.move(center, false);
                         dragoon.holdPosition(true);
                         break;
                     }
-                    else if(positionCounter %3 ==1){
+                    else if(positionCounter == 3 ){
                         dragoon.move(firstChoke, false);
                     }
                 }
@@ -628,7 +623,6 @@ public class MinimalAIClient implements BWAPIEventListener {
             for (Unit unit : bwapi.getMyUnits()) {
                 if (unit.getType() == UnitTypes.Protoss_Gateway) {
                     check = unit.getTrainingQueueSize();
-                    System.out.println(max);
                     if(check < max){
                         unitBest = unit;
                     }
@@ -675,7 +669,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         enemyPosition = enemyAttack.getPosition();
                 }
                 //starts building when it starts to build the x zealot so we need to attack at x+1
-                if (dragoonCounter >= (dragoonAttackCount +1)) {
+                if (dragoonCounter >= (dragoonAttackCount)) {
                         for (Unit  drag : bwapi.getMyUnits()) {
                                 if (drag.getType() == UnitTypes.Protoss_Dragoon && drag.isIdle()) {
                                         drag.attack(enemyPosition, false);
@@ -683,6 +677,24 @@ public class MinimalAIClient implements BWAPIEventListener {
                                 }
                         }
                 }
+        }
+
+        //making all of the zealots attack once we hit a threshold count of the zealots, zealots will sit idle until that number is reached
+        public void templarAttack(int templarCounter, int templarAttackCount ) {
+
+            for (Unit u : bwapi.getEnemyUnits()) {
+                enemyAttack = u;
+                enemyPosition = enemyAttack.getPosition();
+            }
+            //starts building when it starts to build the x zealot so we need to attack at x+1
+            if (templarCounter >= (templarAttackCount)) {
+                for (Unit  templar : bwapi.getMyUnits()) {
+                    if (templar.getType() == UnitTypes.Protoss_Dark_Templar && templar.isIdle()) {
+                        templar.attack(enemyPosition, false);
+                        break;
+                    }
+                }
+            }
         }
 
         /*--------------------------------------------------------------------
@@ -709,7 +721,6 @@ public class MinimalAIClient implements BWAPIEventListener {
                 mineralPosition = minerals.getPosition();
 
                 int xMin = mineralPosition.getX(Position.PosType.PIXEL);
-                int yMin = mineralPosition.getY(Position.PosType.PIXEL);
 
                 if (xBuild > xMin) {
                         //nexus right of minerals so build to the right
@@ -723,6 +734,10 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
                 //euclidean distance to not build in this area
                 pylonPosition = new Position(xBuild, yBuild);
+                Position checkPosition = placement(pylonPosition, 0, 300, 10);
+                if (pylonPosition != checkPosition && numType(UnitTypes.Protoss_Pylon) == 0){
+                    pylonPosition = checkPosition;
+                }
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
         }
 
