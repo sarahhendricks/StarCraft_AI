@@ -210,13 +210,17 @@ public class MinimalAIClient implements BWAPIEventListener {
                 if((supplyUsed/2) >= 10 && mineralCount >= 100 && numZealot() < 6 && hasBuild(UnitTypes.Protoss_Gateway)){
                     buildZealots();
                 }
+                if((supplyUsed/2) >= 25 && numZealot()==6){
+                    System.out.println("Z");
+                    zealotsAttack(numZealot(), 6);
+                }
                 // 17-19/25 Build gateway
                 if((supplyUsed/2) >= 10 && mineralCount >= 150 && numType(UnitTypes.Protoss_Gateway)<2 && numType(UnitTypes.Protoss_Pylon)==2){
-                    Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
-                    System.out.println("1" + usePosition);
-                    Position placeGate = placement(usePosition, 40, 100, 5);
-                    System.out.println("2" + placeGate);
-                    buildGateway(placeGate);
+                    //Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 2);
+                    //System.out.println("1" + usePosition);
+                    //Position placeGate = placement(usePosition, 40, 100, 5);
+                    //System.out.println("2" + placeGate);
+                    //buildGateway(placeGate);
                 }
         }
 
@@ -356,8 +360,6 @@ public class MinimalAIClient implements BWAPIEventListener {
         //function to build probes
         public void buildProbes(){
             nexus.train(UnitTypes.Protoss_Probe);
-            //System.out.print("train");
-            //System.out.println(numType(UnitTypes.Protoss_Probe));
         }
 
         public int numProbes(){
@@ -379,10 +381,10 @@ public class MinimalAIClient implements BWAPIEventListener {
             int count = 0;
             for (Unit u : bwapi.getMyUnits()) {
                 if (u.getType() == testType) {
-                    System.out.println(index);
+                    //System.out.println(index);
                     count += 1;
                     if (count == index){
-                        System.out.println(u.getPosition());
+                        //System.out.println(u.getPosition());
                         return u.getPosition();
                     }
                 }
@@ -512,18 +514,13 @@ public class MinimalAIClient implements BWAPIEventListener {
                         enemyAttack = u;
                         enemyPosition = enemyAttack.getPosition();
                 }
-                for (Unit unit : bwapi.getMyUnits()) {
-                        if (unit.getType() == UnitTypes.Protoss_Zealot) {
-                                zealotCounter = zealotCounter + 1;
-                        }
-                }
                 //starts building when it starts to build the x zealot so we need to attack at x+1
-                if (zealotCounter >= (zealotAttackCount  + 1)) {
+                System.out.println(zealotCounter);
+                System.out.println(zealotAttackCount);
+                if (zealotCounter >= (zealotAttackCount)) {
                         for (Unit  zealot : bwapi.getMyUnits()) {
                                 if (zealot.getType() == UnitTypes.Protoss_Zealot && zealot.isIdle()) {
-                                      //  System.out.println("Atttackkkk PLEASE");
                                         zealot.attack(enemyPosition, false);
-                                      //  System.out.println("Atttackkkk");
                                         break;
                                 }
                         }
@@ -620,7 +617,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                                         if (checkSpot(checkPosition1.getX(Position.PosType.PIXEL), checkPosition1.getY(Position.PosType.PIXEL)) == true) {
                                                 bwapi.drawCircle(checkPosition1, 3, BWColor.Yellow, true, false);
                                                 buildPosition = checkPosition1;
-                                                System.out.println("Check Position = " + checkPosition1);
+                                                //System.out.println("Check Position = " + checkPosition1);
                                                 break;
                                         }
                                 }
@@ -678,7 +675,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         break;
                         }
                 }
-                System.out.println("Build Position = " + buildPosition);
+                //System.out.println("Build Position = " + buildPosition);
                 return buildPosition;
         }
 
