@@ -33,6 +33,7 @@ public class MinimalAIClient implements BWAPIEventListener {
     private Unit gateway;
     private Unit zealots;
 
+    private VSZergAI vsZergAI = new VSZergAI();
     // Neutral unit positions
     Position geyserPosition;
     Position nexusPosition;
@@ -93,7 +94,7 @@ public class MinimalAIClient implements BWAPIEventListener {
     @Override
     public void matchStart() {
         System.out.println("Game Started");
-
+        vsZergAI.matchStart();
         //initializing all the variables
         bwapi.enableUserInput();
         bwapi.enablePerfectInformation();
@@ -321,7 +322,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                         protossVsPT();
                 }
                 else {
-                        protossVsZerg();
+                        vsZergAI.protossVsZerg(bwapi);
                 }
 
         }
