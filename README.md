@@ -8,15 +8,12 @@ All deliverables should be available on GitHub. Required deliverables include:
  - Code that is clean, documented, and has appropriate class decomposition.
  - High-level overview of your approach
  - Explanation of all major classes, and a time-based guide as to what the agent does over time.    
- 
- ## Reach Goals  
- -Complete build orders for multiple races  
- 
- -Micromanaged attack strategies  
- 
- -Dynamically position buildings  
- 
- -Utilizing choke points for defense strategies  
+
+## Reach Goals  
+- Complete build orders for multiple races   
+- Micromanaged attack strategies  
+- Dynamically position buildings  
+- Utilizing choke points for defense strategies  
  
 
 ## High Level Overview
