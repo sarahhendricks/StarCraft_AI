@@ -147,11 +147,15 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         }
 
-        /*
-         * The game strategy for Terran enemies.
-         *
-         */
-        private void protossVsPT(){
+    /*--------------------------------------------------------------------
+    |  Method protossVsPT
+    |
+    |  Purpose: Implement build order for protoss vs protoss and
+    |      protoss vs terran according to specific supply counts and
+    |      conditions. See gitHub readme for complete build order
+    |      explanation.
+    *-------------------------------------------------------------------*/
+    private void protossVsPT(){
                 // 4-8/9 Train Probes (8)
                 if((supplyUsed/2) < 8 && mineralCount >=50){
                     buildProbes();
@@ -240,7 +244,7 @@ public class MinimalAIClient implements BWAPIEventListener {
                     }
                 }
                 //Build Templar
-                if(mineralCount >= 150 && gasCount >= 200 && numType(UnitTypes.Protoss_Citadel_of_Adun) == 1){
+                if(mineralCount >= 150 && gasCount >= 200 && numType(UnitTypes.Protoss_Citadel_of_Adun) == 1 && numType(UnitTypes.Protoss_Templar_Archives) < 1){
                     Position usePosition = findPosition(UnitTypes.Protoss_Pylon, 3);
                     Position placeTemplar = placement(usePosition, 50, 150, 5);
                     if (placeTemplar != null){
@@ -259,9 +263,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        /*
-         * The game strategy for Zerg enemies.
-         */
+        /*--------------------------------------------------------------------
+        |  Method protossVsZerg
+        |
+        |  Purpose: Implement build order for protoss vs zerg
+        |      according to specific supply counts and
+        |      conditions. See gitHub readme for complete build order
+        |      explanation.
+        *-------------------------------------------------------------------*/
         private void protossVsZerg() {
             System.out.print("enemy is zerg");
         }
@@ -300,7 +309,14 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         }
 
-        //a function to collect Mineral
+        /*--------------------------------------------------------------------
+        |  Method collectMinerals
+        |
+        |  Purpose: Find idle probes that are not our worker probe or gas
+        |      probes to collect minerals. Since function is called in
+        |      MatchFrame, it will constantly be checking if there are
+        |      new probes warped and send them to collect gas.
+        *-------------------------------------------------------------------*/
         public void collectMinerals(){
 
                 for (Unit unit : bwapi.getMyUnits()) {
@@ -323,7 +339,14 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        //a function to talk to gas probe
+        /*--------------------------------------------------------------------
+        |  Method gasProbeCollect
+        |
+        |  Purpose: Have all probes but one worker probe to collect minerals
+        |      until we build the assimilator. Then stop two probes from
+        |      collecting minerals, assign them as gasprobes and start
+        |      collecting gas.
+        *-------------------------------------------------------------------*/
         public void gasProbeCollect(){
             //everyone collect minerals
             if (hasBuild(UnitTypes.Protoss_Assimilator)){
@@ -347,7 +370,14 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-        // a Function to collect Gas
+        /*--------------------------------------------------------------------
+        |  Method collectGas
+        |
+        |  Purpose: After the two gasprobes have been assigned, collectGas
+        |      function sends the two gasprobes to collect gas from the
+        |      assimilator. The function is constantly called in MatchFrame
+        |      as the collectMinerals function.
+        *-------------------------------------------------------------------*/
         public void collectGas(){
                 if (hasBuild(UnitTypes.Protoss_Assimilator)) {
                         for (Unit unit : bwapi.getMyUnits()) {
@@ -368,7 +398,12 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-        //a function to build the assimilator
+        /*--------------------------------------------------------------------
+        |  Method buildAssimilator
+        |
+        |  Purpose: Sends the worker probe to build an assimilator on top of
+        |      the vespene gas when we do not have an assimilator.
+        *-------------------------------------------------------------------*/
         public void buildAssimilator(){
                 if (poolProbe != null && !hasBuild(UnitTypes.Protoss_Assimilator) && mineralCount >= 100) {
                         for (Unit vespene : bwapi.getNeutralUnits()) {
@@ -395,7 +430,11 @@ public class MinimalAIClient implements BWAPIEventListener {
 
         }
 
-        //function to build probes
+        /*--------------------------------------------------------------------
+        |  Method buildProbes
+        |
+        |  Purpose: Assign nexus to build a probe.
+        *-------------------------------------------------------------------*/
         public void buildProbes(){
             nexus.train(UnitTypes.Protoss_Probe);
         }
@@ -410,7 +449,13 @@ public class MinimalAIClient implements BWAPIEventListener {
             return (q + numType(typeCheck));
         }
 
-        //function to build pylons
+        /*--------------------------------------------------------------------
+        |  Method buildPylons
+        |
+        |  Purpose: Sends the worker probe to build a pylon.
+        |  Parameter: pylonPosition - the position passed into the function
+        |      to build a pylon.
+        *-------------------------------------------------------------------*/
         public void buildPylons(Position pylonPosition){
             poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
         }
@@ -430,6 +475,16 @@ public class MinimalAIClient implements BWAPIEventListener {
             return null;
         }
 
+        /*--------------------------------------------------------------------
+        |  Method numType
+        |
+        |  Purpose: Count the number of a specific type of units. Increment
+        |      the count as we build more units of the same type.
+        |  Parameter: testType - a UnitType passed into the function
+        |      for counting.
+        |  Return: count - the total number of the units of the specified
+        |      UnitType.
+        *-------------------------------------------------------------------*/
         public int numType(UnitType testType){
             int count = 0;
             for (Unit u : bwapi.getMyUnits()) {
@@ -440,6 +495,15 @@ public class MinimalAIClient implements BWAPIEventListener {
             return count;
         }
 
+        /*--------------------------------------------------------------------
+        |  Method hasBuild
+        |
+        |  Purpose: Check if we have initiated building a unit.
+        |  Parameter: testType - a UnitType passed into the function for
+        |      checking.
+        |  Return: true - if the unit has been initiated
+        |       false - if the unit has not been initiated
+        *-------------------------------------------------------------------*/
         public boolean hasBuild(UnitType testType){
             if (numType(testType)>=1){
                 return true;
@@ -449,12 +513,24 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-        //function to create a gateway
+        /*--------------------------------------------------------------------
+        |  Method buildGateway
+        |
+        |  Purpose: Sends the worker probe to build an assimilator on top of
+        |      the vespene gas when we do not have an assimilator.
+        *-------------------------------------------------------------------*/
         public void buildGateway(Position putHere){
             poolProbe.build(putHere, UnitTypes.Protoss_Gateway);
         }
 
-        //function to create a cybernetics core
+        /*--------------------------------------------------------------------
+        |  Method buildCyber
+        |
+        |  Purpose: Sends the worker probe to build a Cybernectic Core at a
+        |      position generated with the placement function.
+        |  Parameter: putHere - a position generated by the placement function
+        |      passed in as the position of Cybernectic Core
+        *-------------------------------------------------------------------*/
         public void buildCyber(Position putHere){
             for (Unit u : bwapi.getMyUnits()){
                 if(u.getType() == UnitTypes.Protoss_Gateway){
@@ -466,16 +542,29 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-        //Build citadel
+        /*--------------------------------------------------------------------
+        |  Method buildCitadel
+        |
+        |  Purpose: Have the poolProbe build a Citadel
+        *-------------------------------------------------------------------*/
         public void buildCitadel(Position putHere){
             poolProbe.build(putHere, UnitTypes.Protoss_Citadel_of_Adun);
         }
 
+        /*--------------------------------------------------------------------
+        |  Method buildTemplarArchive
+        |
+        |  Purpose: Have the poolProbe build a Templar Archive
+        *-------------------------------------------------------------------*/
         public void buildTemplarArchive(Position putHere) {
             poolProbe.build(putHere, UnitTypes.Protoss_Templar_Archives);
         }
 
-        //function to create dragoons
+        /*--------------------------------------------------------------------
+        |  Method buildDrag
+        |
+        |  Purpose: Assign the gateway with the smallest queue to build a dragoon.
+        *-------------------------------------------------------------------*/
         public void buildDrag(){
             Unit gateBuild = bestGateway();
             if (gateBuild != null){
@@ -514,7 +603,11 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
-        //function to create zealots
+        /*--------------------------------------------------------------------
+        |  Method buildZealots
+        |
+        |  Purpose: Assign the gateway to build a zealot.
+        *-------------------------------------------------------------------*/
         public void buildZealots() {
             Unit gateBuild = bestGateway();
             if (gateBuild != null){
@@ -522,6 +615,12 @@ public class MinimalAIClient implements BWAPIEventListener {
             }
         }
 
+        /*--------------------------------------------------------------------
+        |  Method bestGateway
+        |
+        |  Purpose: Compare the gateways and find the one with the smaller queue.
+        |           max at three so then all of the resources aren't used
+        *-------------------------------------------------------------------*/
         public Unit bestGateway(){
             Unit unitBest = null;
             int check;
@@ -538,26 +637,17 @@ public class MinimalAIClient implements BWAPIEventListener {
             return unitBest;
         }
 
-        //function to create zealots
+        /*--------------------------------------------------------------------
+        |  Method buildTemplar
+        |
+        |  Purpose: Assign the gateway to build a templar.
+        *-------------------------------------------------------------------*/
+        //function to create templars
         public void buildTemplar() {
             Unit gateBuild = bestGateway();
             if (gateBuild != null){
                 gateBuild.train(UnitTypes.Protoss_Dark_Templar);
             }
-        }
-
-        //function trying to find the radius of the pylon
-        public void pylonRadius() {
-                for (Unit pylon : bwapi.getMyUnits()) {
-                        if (pylon.getType() == UnitTypes.Protoss_Pylon) {
-                                Position top = pylon.getTopLeft();
-                              //  System.out.print("This is top left: "+top);
-                              //  bwapi.drawBox(top, 5, BWColor.Blue, true, false);
-                                Position bot = pylon.getBottomRight();
-                               // System.out.print("This is bottom left: "+bot);
-                                bwapi.drawBox(top, bot, BWColor.Yellow, true, false);
-                        }
-                }
         }
 
 //making all of the zealots attack once we hit a threshold count of the zealots, zealots will sit idle until that number is reached
@@ -595,7 +685,19 @@ public class MinimalAIClient implements BWAPIEventListener {
                 }
         }
 
-
+        /*--------------------------------------------------------------------
+        |  Method firstPylonPosition
+        |
+        |  Purpose: Set the position of the first pylon based on the x
+        |      coordinate of the nexus and the minerals. If our nexus is on
+        |      the right side of the minerals, we can conclude that we are
+        |      on the left bottom corner of a map. We are then going to
+        |      build the first pylon on the right side of the nexus.
+        |      On the other hand, if our nexus is on the left side of the
+        |      minerals, we can conclude that we are ont he right top corner
+        |      of the map. We can then build the first pylon on the left side
+        |      of the nexus.
+        *-------------------------------------------------------------------*/
         public void firstPylonPosition(){
 
                 baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
@@ -624,6 +726,22 @@ public class MinimalAIClient implements BWAPIEventListener {
                 bwapi.drawCircle(pylonPosition, 8, BWColor.White, true, false);
         }
 
+        /*--------------------------------------------------------------------
+        |  Method placement
+        |
+        |  Purpose: Based on the position of the pylons, check 8 points
+        |      around the the pylon (spiraling out) and then check the
+        |      radius of each point using the checkSpot function to make
+        |      sure that the point is buildable.
+        |  Parameter: start - the base position, the center of our spiral.
+        |      radius - the starting radius of the spiral (the first circle)
+        |      max - the maximum radius that placement function is going to
+        |      check around the pylon
+        |      inc - the number of pixels we are incrementing each time
+        |      around.
+        |  Return: buildPosition - a valid and buildable position to pass
+        |      into other build functions.
+        *-------------------------------------------------------------------*/
         public Position placement(Position start, int radius, int max, int inc) {
             int checkPointX = start.getX(Position.PosType.PIXEL);
             int checkPointY = start.getY(Position.PosType.PIXEL);
@@ -715,7 +833,22 @@ public class MinimalAIClient implements BWAPIEventListener {
                 return buildPosition;
         }
 
-        public boolean checkSpot(int checkX, int checkY){
+    /*--------------------------------------------------------------------
+    |  Method checkSpot
+    |
+    |  Purpose: Check eight points around each checkpoint generated by the
+    |      placement function. If all eight points are buildable, then
+    |      the corresponding checkpoint in the placement function is
+    |      considered buildable and that position can be returned.
+    |  Parameters: checkX - the x coordinate of the checkpoint the function
+    |      is currently checking.
+    |      checkY - the y coordinate of the chekcpoint the function is
+    |      currently checking.
+    |  Return: true - if all eight points around the checkpoint are
+    |      buildable.
+    |      false - if any of the eight points is not buildable.
+    *-------------------------------------------------------------------*/
+    public boolean checkSpot(int checkX, int checkY){
                 Position checkPosition1;
                 Position checkPosition2;
                 Position checkPosition3;
