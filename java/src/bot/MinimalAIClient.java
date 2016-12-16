@@ -12,6 +12,14 @@ import jnibwapi.Position;
 import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
 
+/*--------------------------------------------------------------------
+|  Class MinimalAIClient
+|
+|  Purpose: implementation of all of our more detailed
+|  method documentation. It is the main class that wraps all of  
+|  specific methods and guides our AI agent in playing StarCraft. 
+*-------------------------------------------------------------------*/
+
 public class MinimalAIClient implements BWAPIEventListener {
     private final JNIBWAPI bwapi;
     private Unit poolProbe;
