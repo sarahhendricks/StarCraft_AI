@@ -11,9 +11,12 @@ import jnibwapi.JNIBWAPI;
 import jnibwapi.Position;
 import jnibwapi.Unit;
 import jnibwapi.util.BWColor;
-/**
- * Created by James Raynor on 12/16/16.
- */
+/*--------------------------------------------------------------------
+|  Class VSZergAI
+|
+|  Purpose: Implementation of the VSZerg strategy.
+|  Mostly aimed at trying to survive early aggressive Zerg strategies.
+*-------------------------------------------------------------------*/
 public class VSZergAI implements  BWAPIEventListener{
 
     private JNIBWAPI bwapi;
@@ -41,6 +44,7 @@ public class VSZergAI implements  BWAPIEventListener{
     Position pylonPosition2;
     Position pylonPosition3;
     Position pylonPosition4;
+
     // Choke point positions
     Position center;
     Position firstChoke;
@@ -81,14 +85,20 @@ public class VSZergAI implements  BWAPIEventListener{
     boolean hasCitadel;
     boolean hasArchives;
     boolean hasForge;
-
+    /*--------------------------------------------------------------------
+    |  Method protossVsZerg
+    |
+    |  Purpose: Implement build order for protoss vs Zerg
+    |   See gitHub readme for complete build order
+    |      explanation.
+    *-------------------------------------------------------------------*/
     public void protossVsZerg(JNIBWAPI bwapi) {
-        //System.out.println("Game Started");
 
         //initializing all the variables
         bwapi.enableUserInput();
         bwapi.enablePerfectInformation();
-
+        // Get hardcoded building placements.
+        placement();
         //bwapi.setGameSpeed(0);
         poolProbe = null;
         gasProbe = null;
@@ -118,7 +128,7 @@ public class VSZergAI implements  BWAPIEventListener{
         int supplyTotal = bwapi.getSelf().getSupplyTotal();
         int zealotCounter = 0;
         int buildOrderNumber = supplyUsed / 2;
-
+        // Attack test for PvZ.
         for (Unit u : bwapi.getMyUnits()) {
             if(u.getType() == UnitTypes.Protoss_Gateway && u.isCompleted()) {
                 u.train(UnitTypes.Protoss_Zealot);
@@ -165,18 +175,16 @@ public class VSZergAI implements  BWAPIEventListener{
         }
 
         switch (buildOrderNumber) {
-            // 8 - Pylon at Natural Expansion[1]
+            // 7 - Pylon at Pylon Position[1]
             case 7:
                 if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPosition) &&
                         mineralCount > 100) {
                     buildPylons(mineralCount, pylonPosition);
                 }
+                // If the Pylon is built then build probes!
                 if (buildingExists(UnitTypes.Protoss_Pylon, pylonPosition)) {
                     buildProbes(mineralCount);
                 }
-                break;
-            case 8:
-                buildProbes(mineralCount);
                 break;
             // 10 - Forge[2]
             case 9:
@@ -187,38 +195,8 @@ public class VSZergAI implements  BWAPIEventListener{
                     buildProbes(mineralCount);
                 }
                 break;
-            case 10:
-                buildProbes(mineralCount);
-//                                poolProbe.move(myChokePoint.getCenter(), false);
-                break;
-            case 11:
-                buildProbes(mineralCount);
-                break;
-            // 13 - two Photon Cannons[3]
+            // 12 - two Photon Cannons[3]
             case 12:
-//                                Position chokePoint = myChokePoint.getCenter();
-//                                int xBuild = chokePoint.getX(Position.PosType.PIXEL);
-//                                int yBuild = chokePoint.getY(Position.PosType.PIXEL);
-//                                Position pylonPoint = new Position(xBuild + 100, yBuild + 100);
-//                                Position change = new Position(xBuild + 150, yBuild + 70);
-//                                bwapi.drawCircle(pylonPoint, 8, BWColor.Green, true, false);
-//                                bwapi.drawCircle(change, 8, BWColor.Cyan, true, false);
-
-//                                if (poolProbe.isIdle() && poolProbe.getPosition().getBX() !=
-//                                        pylonPoint.getBX()) {
-//                                        System.out.println("pool probe idle");
-////                                        for (Unit u : bwapi.getMyUnits()) {
-////                                                if (u.getType() == UnitTypes.Protoss_Pylon)
-////                                                        System.out.println(u.getID()+", "+u.getType());
-////                                        }
-//                                        poolProbe.move(pylonPoint, false);
-//                                }
-//                                if (!buildingExists(UnitTypes.Protoss_Pylon, pylonPoint)) {
-//                                        System.out.println("no pylon exists yet.");
-//                                        buildPylons(mineralCount, pylonPoint);
-//                                }
-//                                System.out.println(bwapi.getMap().isBuildable(change));
-//                                System.out.println(buildingExists(UnitTypes.Protoss_Photon_Cannon, change));
                 if (!buildingExists(UnitTypes.Protoss_Photon_Cannon, citadelPosition)) {
                     buildPhotonCannon(mineralCount, citadelPosition);
                 }
@@ -229,6 +207,7 @@ public class VSZergAI implements  BWAPIEventListener{
                     buildProbes(mineralCount);
                 }
                 break;
+            // 13 - One gateway to build[4]
             case 13:
                 if (!buildingExists(UnitTypes.Protoss_Gateway, gatewayPosition)) {
                     buildGateway(mineralCount);
@@ -237,6 +216,7 @@ public class VSZergAI implements  BWAPIEventListener{
                     buildZealots(mineralCount);
                 }
                 break;
+            // default, if there is a gateway, then build zealots. Else build probes.
             default:
                 if (hasGateway) {
                     buildZealots(mineralCount);
@@ -244,6 +224,7 @@ public class VSZergAI implements  BWAPIEventListener{
                     buildProbes(mineralCount);
                 }
         }
+//                  Future build order
 //                 * 15 - Pylon[4]
 //                 * 18 - Nexus
 //                 * 18 - Gateway [5]
@@ -261,25 +242,16 @@ public class VSZergAI implements  BWAPIEventListener{
 //                 * @ 2 Archons - Zealot Speedupgrade
 //                 * @ ~95% +1 Attack Upgrade - Army moves out
 //                 */
-        placement();
-        //calling the functions in the matchframe
-
-
-//                buildAssimilator(mineralCount);
-//                collectMinerals();
-//                collectGas();
-//                buildProbes(mineralCount);
-//                buildPylons(mineralCount, supplyUsed, supplyTotal);
-//                placement();
-//                pylonRadius();
-//                buildGateway(mineralCount);
-//                buildCitadel(mineralCount, gasCount);
-//                buildCyber(mineralCount);
-//                buildTemplarArchive(mineralCount);
-//                buildDrag(mineralCount , gasCount);
-//                buildZealots(mineralCount);
     }
-
+    /*--------------------------------------------------------------------
+    |  Method buildingExists
+    |
+    |  Purpose: Assign the gateway to build a templar.
+    |  Parameters: buildingType - The type of building.
+    |              buildingPosition - The position of where to build the
+    |                                 building.
+    |  Returns: Boolean
+    *-------------------------------------------------------------------*/
     private boolean buildingExists(UnitType buildingType, Position buildingPosition) {
         for (Unit u : bwapi.getMyUnits()) {
             if (u.getType() == buildingType){
@@ -293,17 +265,15 @@ public class VSZergAI implements  BWAPIEventListener{
         return false;
     }
 
-    /*
-     * The game strategy for Protoss enemies.
-     */
-    private void protossVsProtoss() {
-    }
 
-    /*
-     * This runs every game frame (multiple times a second!!)
-     */
-
-    //a function to collect Mineral
+    /*--------------------------------------------------------------------
+    |  Method collectMinerals
+    |
+    |  Purpose: Find idle probes that are not our worker probe or gas
+    |      probes to collect minerals. Since function is called in
+    |      MatchFrame, it will constantly be checking if there are
+    |      new probes warped and send them to collect gas.
+    *-------------------------------------------------------------------*/
     public void collectMinerals(){
         for (Unit unit : bwapi.getMyUnits()) {
             if (unit.getType() == UnitTypes.Protoss_Probe) {
@@ -323,7 +293,14 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    // a Function to collect Gas
+    /*--------------------------------------------------------------------
+    |  Method gasProbeCollect
+    |
+    |  Purpose: Have all probes but one worker probe to collect minerals
+    |      until we build the assimilator. Then stop two probes from
+    |      collecting minerals, assign them as gasprobes and start
+    |      collecting gas.
+    *-------------------------------------------------------------------*/
     public void collectGas(){
         if (hasAssimilator) {
             for (Unit unit : bwapi.getMyUnits()) {
@@ -344,7 +321,12 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //a function to build the assimilator
+    /*--------------------------------------------------------------------
+    |  Method buildAssimilator
+    |
+    |  Purpose: Sends the worker probe to build an assimilator on top of
+    |      the vespene gas when we do not have an assimilator.
+    *-------------------------------------------------------------------*/
     public void buildAssimilator(int mineralCount){
         if (poolProbe != null && !hasAssimilator && mineralCount >= 100) {
             for (Unit vespene : bwapi.getNeutralUnits()) {
@@ -369,7 +351,11 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //function to build probes
+    /*--------------------------------------------------------------------
+    |  Method buildProbes
+    |
+    |  Purpose: Assign nexus to build a probe.
+    *-------------------------------------------------------------------*/
     public void buildProbes(int mineralCount){
         if ( mineralCount >= 50 && !nexus.isTraining() &&
                 bwapi.getSelf().getSupplyUsed()/2 <= bwapi.getSelf().getSupplyTotal()/2) {
@@ -377,14 +363,25 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //function to build pylons
+    /*--------------------------------------------------------------------
+    |  Method buildPylons
+    |
+    |  Purpose: Sends the worker probe to build a pylon.
+    |  Parameter: pylonPosition - the position passed into the function
+    |      to build a pylon.
+    *-------------------------------------------------------------------*/
     public void buildPylons(int mineralCount, Position pylonPosition){
         if ( mineralCount >100){
             poolProbe.build(pylonPosition, UnitTypes.Protoss_Pylon);
         }
     }
 
-    //function to create a gateway
+    /*--------------------------------------------------------------------
+    |  Method buildGateway
+    |
+    |  Purpose: Sends the worker probe to build a Gateway at the hardcoded position.
+    |  Parameter: mineralCount - the current mineral count.
+    *-------------------------------------------------------------------*/
     public void buildGateway(int mineralCount){
         if (mineralCount >150 && poolProbe.isIdle() ){
             poolProbe.build(gatewayPosition, UnitTypes.Protoss_Gateway);
@@ -392,7 +389,12 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //function to create a cybernetics core
+    /*--------------------------------------------------------------------
+    |  Method buildCyber
+    |
+    |  Purpose: Sends the worker probe to build a Cybernectic Core at the hardcoded position.
+    |  Parameter: mineralCount - the current mineral count.
+    *-------------------------------------------------------------------*/
     public void buildCyber(int mineralCount){
         if (hasGateway && mineralCount > 300){
             poolProbe.build(cyberPosition, UnitTypes.Protoss_Cybernetics_Core);
@@ -400,7 +402,12 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    // function to build the citadel
+    /*--------------------------------------------------------------------
+    |  Method buildCitadel
+    |
+    |  Purpose: Have the poolProbe build a Citadel at the hardcoded position.
+    |  Parameter: mineralCount - the current mineral count.
+    *-------------------------------------------------------------------*/
     public void buildCitadel(int mineralCount, int gasCount){
         if ( mineralCount > 350 && gasCount > 100 && poolProbe.isIdle()) {
             poolProbe.build(citadelPosition, UnitTypes.Protoss_Citadel_of_Adun);
@@ -408,7 +415,12 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    // function to build templar archive, needs citadel first
+    /*--------------------------------------------------------------------
+    |  Method buildTemplarArchive
+    |
+    |  Purpose: Have the poolProbe build a Templar Archive at the hardcoded position.
+    |  Parameter: mineralCount - the current mineral count.
+    *-------------------------------------------------------------------*/
     public void buildTemplarArchive(int mineralCount) {
         if (hasCitadel && mineralCount > 150 && poolProbe.isIdle()) {
             poolProbe.build(archivesPosition, UnitTypes.Protoss_Templar_Archives);
@@ -416,7 +428,12 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    // function to build forge
+    /*--------------------------------------------------------------------
+    |  Method buildForge
+    |
+    |  Purpose: Have the poolProbe build a Forge at the hardcoded position.
+    |  Parameter: mineralCount - the current mineral count.
+    *-------------------------------------------------------------------*/
     public void buildForge(int mineralCount) {
         if (mineralCount > 150 && poolProbe.isIdle()) {
             poolProbe.build(forgePosition, UnitTypes.Protoss_Forge);
@@ -431,7 +448,11 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //function to create dragoons
+    /*--------------------------------------------------------------------
+    |  Method buildDrag
+    |
+    |  Purpose: Assign the gateway with the smallest queue to build a dragoon.
+    *-------------------------------------------------------------------*/
     public void buildDrag(int mineralCount, int gasCount){
         if(hasCyber && mineralCount > 300 && gasCount > 50){
             for (Unit unit : bwapi.getMyUnits()) {
@@ -443,7 +464,11 @@ public class VSZergAI implements  BWAPIEventListener{
         }
     }
 
-    //function to create zealots
+    /*--------------------------------------------------------------------
+    |  Method buildZealots
+    |
+    |  Purpose: Assign the gateway to build a zealot.
+    *-------------------------------------------------------------------*/
     public void buildZealots(int mineralCount) {
         if (hasGateway) {
             for (Unit unit : bwapi.getMyUnits()) {
@@ -454,20 +479,11 @@ public class VSZergAI implements  BWAPIEventListener{
             }
         }
     }
-    //function trying to find the radius of the pylon
-    public void pylonRadius(Position pylonPoint) {
-        for (Unit pylon : bwapi.getMyUnits()) {
-            if (pylon.getType() == UnitTypes.Protoss_Pylon && pylon.getPosition() == pylonPoint) {
-                Position top = pylon.getTopLeft();
-                //  System.out.print("This is top left: "+top);
-                //  bwapi.drawBox(top, 5, BWColor.Blue, true, false);
-                Position bot = pylon.getBottomRight();
-                // System.out.print("This is bottom left: "+bot);
-                bwapi.drawBox(top, bot, BWColor.Yellow, true, false);
-            }
-        }
-    }
-
+    /*--------------------------------------------------------------------
+    |  Method placement
+    |
+    |  Purpose: Assigns hardcoded positions to the Position variables
+    *-------------------------------------------------------------------*/
     public void placement(){
         baseRegion = bwapi.getMap().getRegion(nexus.getPosition());
         //  nexusPosition = nexus.getTilePosition();
