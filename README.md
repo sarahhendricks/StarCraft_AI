@@ -15,6 +15,8 @@ All deliverables should be available on GitHub. Required deliverables include:
 - Dynamically position buildings  
 - Utilizing choke points for defense strategies  
  
+## Extra Point Justification
+Our base points goals were to have a working bot that successfully created all the required units, including the tier two Dark Templars, which we acheived. Our extra point goal was to best combat different enemy attack styles through a decision-tree style option choosing in order to directly respond to our opponents actions. We believe that we acheived this goal through our differentiated build orders based on the enemy's race. Beyond that, we also developed a sophisticated algorithm for building placement, which went above and beyond the original standards we had set for ourselves.
 
 ## High Level Overview
 At a very high level, the goal of our agent is to survive through the early game and into mid-late game at which point we would begin our offensive. We have two different build orders with rather different strategies. Our main approach was the creation of different functions to build buildings, units, and to attack depending on what point in the game we were. We then organized those functions based on how many units we had room for and what other buildings had been completed in order to follow our build order. 
